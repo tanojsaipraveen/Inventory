@@ -10,6 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -108,6 +110,11 @@
                         <svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
                         <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z"></path></svg>
                     </button>
+                    <!-- Cloud Sync Status Badge -->
+                    <div id="cloud-sync-badge" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 bg-slate-55 dark:bg-slate-850 transition shadow-sm select-none">
+                        <span id="sync-badge-dot" class="w-1.5 h-1.5 rounded-full bg-slate-400 transition"></span>
+                        <span id="sync-badge-text">Local Only</span>
+                    </div>
 
                     <button onclick="loadFromSheets()" id="btn-load" class="flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-white dark:bg-slate-750 border border-slate-300 dark:border-slate-600 text-sm font-medium rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-sm">
                         <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
@@ -181,6 +188,28 @@
                             <svg class="w-12 h-12 text-slate-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
                             <p class="text-sm font-medium">No items are currently being tracked.</p>
                             <button onclick="switchTab('settings')" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-semibold hover:bg-indigo-700 transition">Go to Settings & Add Items</button>
+                        </div>
+                    </div>
+
+                    <!-- Charts Section -->
+                    <div id="dashboard-charts-container" class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6 pb-6 hidden">
+                        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-150 dark:border-slate-700 shadow-sm flex flex-col">
+                            <h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.003 9.003 0 1020.95 12h-9V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
+                                Stock Distribution by Category
+                            </h3>
+                            <div class="h-64 relative flex items-center justify-center">
+                                <canvas id="categoryChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-150 dark:border-slate-700 shadow-sm flex flex-col">
+                            <h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                                Activity volume Trend (Last 7 Days)
+                            </h3>
+                            <div class="h-64 relative flex items-center justify-center">
+                                <canvas id="trendChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -427,7 +456,7 @@
 
     <script>
         // --- Core Data Model ---
-        let CATEGORIES = ['General'];
+        let CATEGORIES = [];
         let ITEMS = [];
 
         // Escape HTML function to prevent XSS
@@ -445,7 +474,7 @@
         const savedSettings = localStorage.getItem('inventorySettings');
         if (savedSettings) {
             const parsed = JSON.parse(savedSettings);
-            CATEGORIES = parsed.categories || ['General'];
+            CATEGORIES = parsed.categories || [];
             ITEMS = parsed.items || [];
             
             // Map legacy array structure into fully updated structure
@@ -456,25 +485,121 @@
                 unit: item.unit || 'pcs'
             }));
         } else {
-            // Migration support for old inventory lists
-            const legacyItems = localStorage.getItem('inventoryItems');
-            if (legacyItems) {
-                const parsed = JSON.parse(legacyItems);
-                ITEMS = parsed.map(item => ({ name: item, category: 'General', minQty: 5, unit: 'pcs' }));
-            } else {
-                CATEGORIES = ['Feed', 'Medicine', 'Equipment'];
-                ITEMS = [
-                    { name: 'Corn (50kg)', category: 'Feed', minQty: 5, unit: 'bags' },
-                    { name: 'Wheat (50kg)', category: 'Feed', minQty: 5, unit: 'bags' },
-                    { name: 'Paracetamol', category: 'Medicine', minQty: 10, unit: 'boxes' },
-                    { name: 'Bandages', category: 'Medicine', minQty: 15, unit: 'pcs' }
-                ];
-            }
+            CATEGORIES = [];
+            ITEMS = [];
             saveConfig();
+        }
+
+        // --- Automated Background Cloud Sync Engine ---
+        let disableAutoSync = false;
+        let autoSyncTimeout = null;
+
+        function updateSyncBadge(state) {
+            const badge = document.getElementById('cloud-sync-badge');
+            const dot = document.getElementById('sync-badge-dot');
+            const text = document.getElementById('sync-badge-text');
+            if (!badge || !dot || !text) return;
+
+            // Reset classes
+            dot.className = "w-1.5 h-1.5 rounded-full transition";
+            badge.className = "flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border transition shadow-sm select-none";
+
+            if (!appScriptUrl) {
+                dot.classList.add('bg-slate-400');
+                text.textContent = 'Local Only';
+                badge.className = "flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-850 transition shadow-sm select-none";
+                return;
+            }
+
+            if (!state) {
+                state = localStorage.getItem('hasUnsyncedChanges') === 'true' ? 'pending' : 'synced';
+            }
+
+            switch(state) {
+                case 'synced':
+                    dot.classList.add('bg-emerald-500');
+                    text.textContent = 'Synced';
+                    badge.classList.add('border-emerald-200', 'dark:border-emerald-900/40', 'text-emerald-700', 'dark:text-emerald-400', 'bg-emerald-50/20', 'dark:bg-emerald-950/10');
+                    break;
+                case 'syncing':
+                    dot.classList.add('bg-indigo-500', 'animate-ping');
+                    text.textContent = 'Syncing...';
+                    badge.classList.add('border-indigo-200', 'dark:border-indigo-900/40', 'text-indigo-700', 'dark:text-indigo-400', 'bg-indigo-50/20', 'dark:bg-indigo-950/10');
+                    break;
+                case 'pending':
+                    dot.classList.add('bg-amber-500', 'animate-pulse');
+                    text.textContent = 'Sync Pending';
+                    badge.classList.add('border-amber-200', 'dark:border-amber-900/40', 'text-amber-700', 'dark:text-amber-450', 'bg-amber-50/20', 'dark:bg-amber-950/10');
+                    break;
+                case 'error':
+                    dot.classList.add('bg-rose-500', 'animate-pulse');
+                    text.textContent = 'Sync Error';
+                    badge.classList.add('border-rose-200', 'dark:border-rose-900/40', 'text-rose-700', 'dark:text-rose-450', 'bg-rose-50/20', 'dark:bg-rose-950/10');
+                    break;
+            }
+        }
+
+        function queueAutoSync() {
+            if (disableAutoSync || !appScriptUrl) {
+                updateSyncBadge();
+                return;
+            }
+
+            localStorage.setItem('hasUnsyncedChanges', 'true');
+            updateSyncBadge('pending');
+
+            if (!navigator.onLine) return;
+
+            if (autoSyncTimeout) clearTimeout(autoSyncTimeout);
+            autoSyncTimeout = setTimeout(async () => {
+                await performBackgroundSync();
+            }, 2500); // 2.5 second debounce delay
+        }
+
+        async function performBackgroundSync() {
+            if (!appScriptUrl || !navigator.onLine || disableAutoSync) return;
+
+            updateSyncBadge('syncing');
+
+            try {
+                const balances = calculateBalances();
+                const balanceArray = ITEMS.map(itemObj => ({ name: itemObj.name, qty: balances[itemObj.name] || 0 }));
+                const maxRows = Math.max(stockIn.length, stockOut.length, ITEMS.length);
+                
+                const dataMatrix = [];
+                for (let i = 0; i < maxRows; i++) {
+                    const sIn = stockIn[i] || { date: '', item: '', qty: '' };
+                    const sOut = stockOut[i] || { date: '', item: '', qty: '' };
+                    const bal = balanceArray[i] || { name: '', qty: '' };
+                    dataMatrix.push([ sIn.date, sIn.item, sIn.qty, sOut.date, sOut.item, sOut.qty, bal.name, bal.qty ]);
+                }
+
+                const response = await fetch(appScriptUrl, {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        action: 'write', 
+                        data: dataMatrix,
+                        metadata: { categories: CATEGORIES, items: ITEMS } 
+                    }),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                });
+
+                const result = await response.json();
+                if (result.status === 'success') {
+                    localStorage.removeItem('hasUnsyncedChanges');
+                    updateSyncBadge('synced');
+                } else {
+                    updateSyncBadge('error');
+                }
+            } catch (error) {
+                console.error("Auto-sync background write failed:", error);
+                updateSyncBadge('error');
+            }
         }
         
         function saveConfig() {
             localStorage.setItem('inventorySettings', JSON.stringify({ categories: CATEGORIES, items: ITEMS }));
+            queueAutoSync();
         }
 
         // --- Transactions Local Storage Persistence ---
@@ -489,6 +614,7 @@
         function saveStockData() {
             localStorage.setItem('inventoryStockIn', JSON.stringify(stockIn));
             localStorage.setItem('inventoryStockOut', JSON.stringify(stockOut));
+            queueAutoSync();
         }
 
         let appScriptUrl = localStorage.getItem('googleSheetsScriptUrl') || '';
@@ -519,23 +645,48 @@
                 document.documentElement.classList.remove('dark');
             }
 
+            // Set initial cloud sync status
+            updateSyncBadge();
+
             updateDropdowns();
             renderSettingsItems();
 
             if (appScriptUrl) {
                 const scriptUrlEl = document.getElementById('script-url');
                 if (scriptUrlEl) scriptUrlEl.value = appScriptUrl;
-                // Auto load Sheets content silently on load
-                loadFromSheets(true); 
+                
+                // If there are unsynced changes from a previous session, push them immediately
+                if (localStorage.getItem('hasUnsyncedChanges') === 'true') {
+                    performBackgroundSync();
+                } else {
+                    // Auto load Sheets content silently on load
+                    loadFromSheets(true); 
+                }
             } else {
                 renderApp();
             }
+        });
+
+        // Listen for internet connection recovery to resync offline changes
+        window.addEventListener('online', () => {
+            if (localStorage.getItem('hasUnsyncedChanges') === 'true') {
+                showToast("Connection restored. Syncing pending data...", "green");
+                performBackgroundSync();
+            } else {
+                updateSyncBadge();
+            }
+        });
+
+        window.addEventListener('offline', () => {
+            updateSyncBadge();
         });
 
         // --- Dark Mode Controller ---
         function toggleDarkMode() {
             const isDark = document.documentElement.classList.toggle('dark');
             localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
+            // Re-render charts to update grid/text colors for dark mode responsiveness
+            setTimeout(updateCharts, 50);
         }
 
         // --- Navigation Controller ---
@@ -712,10 +863,6 @@
                 showToast(`Cannot remove "${cat}". Please remove its items first.`, "red");
                 return;
             }
-            if (CATEGORIES.length <= 1) {
-                showToast("You must have at least one category.", "red");
-                return;
-            }
             CATEGORIES = CATEGORIES.filter(c => c !== cat);
             saveConfig();
             renderSettingsItems();
@@ -734,6 +881,11 @@
             const catVal = selectCat.value;
             const unitVal = unitInput.value.trim() || 'pcs';
             const minQtyVal = parseInt(minInput.value) >= 0 ? parseInt(minInput.value) : 5;
+
+            if (!catVal) {
+                showToast("Please add at least one category before adding items.", "red");
+                return;
+            }
 
             if (nameVal && !ITEMS.some(i => i.name === nameVal)) {
                 ITEMS.push({ name: nameVal, category: catVal, minQty: minQtyVal, unit: unitVal });
@@ -933,6 +1085,9 @@
 
             // 3. RENDER TRANSACTION LOGS (FILTERED)
             renderHistoryLogs();
+
+            // 4. UPDATE DASHBOARD CHARTS
+            updateCharts();
         }
 
         // --- Filter and Render History Logs ---
@@ -1081,6 +1236,7 @@
             appScriptUrl = url;
             localStorage.setItem('googleSheetsScriptUrl', url);
             showToast('Google Sheets Sync URL saved successfully.', 'indigo');
+            updateSyncBadge();
             
             if (url) loadFromSheets(false);
         }
@@ -1165,7 +1321,7 @@
             // Prompt 1: Reset EVERYTHING
             if (confirm("Reset Action:\n\nWould you like to reset EVERYTHING (including all items, categories, and transaction logs) to defaults?")) {
                 if (confirm("Double Confirmation: Are you absolutely sure you want to delete all items, categories, and logs? This will reset the app and cannot be undone unless you sync again from Google Sheets.")) {
-                    CATEGORIES = ['General'];
+                    CATEGORIES = [];
                     ITEMS = [];
                     stockIn = [];
                     stockOut = [];
@@ -1187,6 +1343,179 @@
                         showToast("All transaction logs cleared locally. Click 'Sync to Sheets' to update your Google Sheet.", "red");
                     }
                 }
+            }
+        }
+
+        // --- Visual Analytics Chart Engine (Chart.js) ---
+        let categoryChartInstance = null;
+        let trendChartInstance = null;
+
+        function updateCharts() {
+            const container = document.getElementById('dashboard-charts-container');
+            if (!container) return;
+
+            if (ITEMS.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+            container.classList.remove('hidden');
+
+            const balances = calculateBalances();
+
+            // 1. DATA PREPARATION: Category Distribution (Doughnut Chart)
+            const categoryData = {};
+            CATEGORIES.forEach(cat => categoryData[cat] = 0);
+            
+            ITEMS.forEach(item => {
+                const qty = balances[item.name] || 0;
+                const cat = item.category || 'General';
+                if (categoryData[cat] !== undefined) {
+                    categoryData[cat] += qty;
+                } else {
+                    categoryData[cat] = qty;
+                }
+            });
+
+            const categoryLabels = Object.keys(categoryData).filter(cat => categoryData[cat] > 0 || CATEGORIES.includes(cat));
+            const categoryValues = categoryLabels.map(cat => categoryData[cat]);
+
+            // 2. DATA PREPARATION: Last 7 Days Activity (Bar Chart)
+            const dates = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                dates.push(d.toISOString().split('T')[0]);
+            }
+
+            const inTrend = {};
+            const outTrend = {};
+            dates.forEach(d => {
+                inTrend[d] = 0;
+                outTrend[d] = 0;
+            });
+
+            stockIn.forEach(log => {
+                if (inTrend[log.date] !== undefined) {
+                    inTrend[log.date] += log.qty;
+                }
+            });
+            stockOut.forEach(log => {
+                if (outTrend[log.date] !== undefined) {
+                    outTrend[log.date] += log.qty;
+                }
+            });
+
+            const trendLabels = dates.map(d => {
+                const parts = d.split('-');
+                return new Date(parts[0], parts[1] - 1, parts[2]).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+            });
+            const inValues = dates.map(d => inTrend[d]);
+            const outValues = dates.map(d => outTrend[d]);
+
+            // Destroy old charts to prevent redraw bugs
+            if (categoryChartInstance) categoryChartInstance.destroy();
+            if (trendChartInstance) trendChartInstance.destroy();
+
+            // Check if Dark Mode is active to set text colors
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? '#94a3b8' : '#64748b';
+            const gridColor = isDark ? 'rgba(148, 163, 184, 0.1)' : 'rgba(100, 116, 139, 0.1)';
+
+            // Render category distribution (Doughnut)
+            const ctxCat = document.getElementById('categoryChart');
+            if (ctxCat) {
+                categoryChartInstance = new Chart(ctxCat, {
+                    type: 'doughnut',
+                    data: {
+                        labels: categoryLabels,
+                        datasets: [{
+                            data: categoryValues,
+                            backgroundColor: [
+                                '#6366f1', // Indigo
+                                '#10b981', // Emerald
+                                '#f59e0b', // Amber
+                                '#ec4899', // Pink
+                                '#3b82f6', // Blue
+                                '#8b5cf6', // Violet
+                                '#a855f7', // Purple
+                                '#f43f5e'  // Rose
+                            ],
+                            borderWidth: isDark ? 2 : 1,
+                            borderColor: isDark ? '#1e293b' : '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 12,
+                                    font: { family: 'Outfit', size: 11 },
+                                    color: textColor
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Render activity volume trends (Bar Chart)
+            const ctxTrend = document.getElementById('trendChart');
+            if (ctxTrend) {
+                trendChartInstance = new Chart(ctxTrend, {
+                    type: 'bar',
+                    data: {
+                        labels: trendLabels,
+                        datasets: [
+                            {
+                                label: 'Stock In',
+                                data: inValues,
+                                backgroundColor: 'rgba(99, 102, 241, 0.85)', // Indigo
+                                borderRadius: 4
+                            },
+                            {
+                                label: 'Stock Out',
+                                data: outValues,
+                                backgroundColor: 'rgba(239, 68, 68, 0.85)', // Rose/Red
+                                borderRadius: 4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 12,
+                                    font: { family: 'Outfit', size: 11 },
+                                    color: textColor
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { display: false },
+                                ticks: {
+                                    font: { family: 'Outfit', size: 10 },
+                                    color: textColor
+                                }
+                            },
+                            y: {
+                                grid: { color: gridColor },
+                                ticks: {
+                                    beginAtZero: true,
+                                    font: { family: 'Outfit', size: 10 },
+                                    color: textColor,
+                                    precision: 0
+                                }
+                            }
+                        }
+                    }
+                });
             }
         }
 
@@ -1244,6 +1573,9 @@
             btn.disabled = true;
 
             try {
+                disableAutoSync = true;
+                updateSyncBadge('syncing');
+
                 const balances = calculateBalances();
                 const balanceArray = ITEMS.map(itemObj => ({ name: itemObj.name, qty: balances[itemObj.name] || 0 }));
                 const maxRows = Math.max(stockIn.length, stockOut.length, ITEMS.length);
@@ -1269,14 +1601,19 @@
 
                 const result = await response.json();
                 if (result.status === 'success') {
+                    localStorage.removeItem('hasUnsyncedChanges');
+                    updateSyncBadge('synced');
                     showToast('Settings & Data synced to Google Sheet successfully!', 'green');
                 } else {
+                    updateSyncBadge('error');
                     showToast('Sync Error: ' + result.message, 'red');
                 }
             } catch (error) {
                 console.error(error);
+                updateSyncBadge('error');
                 showToast('Network error while syncing settings.', 'red');
             } finally {
+                disableAutoSync = false;
                 btn.innerHTML = originalHTML;
                 btn.disabled = false;
             }
@@ -1300,13 +1637,16 @@
             }
 
             try {
+                disableAutoSync = true;
+                updateSyncBadge('syncing');
+
                 const response = await fetch(`${appScriptUrl}?action=read`);
                 const result = await response.json();
                 
                 if (result.status === 'success') {
                     // Sync Configuration Settings
                     if (result.metadata) {
-                        CATEGORIES = result.metadata.categories || ['General'];
+                        CATEGORIES = result.metadata.categories || [];
                         ITEMS = result.metadata.items || [];
                     }
 
@@ -1373,14 +1713,20 @@
                     updateDropdowns();
                     saveStockData(); // update local transactions cache
                     renderApp();
+                    
+                    localStorage.removeItem('hasUnsyncedChanges');
+                    updateSyncBadge('synced');
                     if (!isAutoLoad) showToast('Loaded configuration and data from Google Sheet!', 'green');
                 } else {
+                    updateSyncBadge('error');
                     if (!isAutoLoad) showToast(`Failed to load data: ${result.message}`, 'red');
                 }
             } catch (error) {
                 console.error(error);
+                updateSyncBadge('error');
                 if (!isAutoLoad) showToast('Connection error. Failed to load sheets.', 'red');
             } finally {
+                disableAutoSync = false;
                 if (!isAutoLoad) {
                     btn.innerHTML = originalHTML;
                     btn.disabled = false;
