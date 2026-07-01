@@ -656,42 +656,81 @@
             btn.disabled = true;
 
             try {
-                // Convert internal state back to the Spreadsheet matrix format for compatibility
+                // 1. Calculate current balances
                 const balances = calculateBalances();
                 const balanceArray = ITEMS.map(itemObj => ({ name: itemObj.name, qty: balances[itemObj.name] || 0 }));
                 const maxRows = Math.max(stockIn.length, stockOut.length, ITEMS.length);
                 
-                const payload = [];
+                // 2. Prepare transaction matrix
+                const dataMatrix = [];
                 for(let i = 0; i < maxRows; i++) {
                     const sIn = stockIn[i] || { date: '', item: '', qty: '' };
                     const sOut = stockOut[i] || { date: '', item: '', qty: '' };
                     const bal = balanceArray[i] || { name: '', qty: '' };
-                    
-                    payload.push([
-                        sIn.date, sIn.item, sIn.qty,
-                        sOut.date, sOut.item, sOut.qty,
-                        bal.name, bal.qty !== '' ? bal.qty : ''
-                    ]);
+                    dataMatrix.push([ sIn.date, sIn.item, sIn.qty, sOut.date, sOut.item, sOut.qty, bal.name, bal.qty ]);
                 }
 
+                // 3. Send payload containing both DATA and METADATA
                 const response = await fetch(appScriptUrl, {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'write', data: payload }),
+                    body: JSON.stringify({ 
+                        action: 'write', 
+                        data: dataMatrix,
+                        metadata: { categories: CATEGORIES, items: ITEMS } 
+                    }),
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' }
                 });
 
                 const result = await response.json();
                 if(result.status === 'success') {
-                    showStatus('Data successfully synced to Google Sheets!', 'green');
+                    showStatus('Data and Settings synced successfully!', 'green');
                 } else {
-                    showStatus('Error syncing: ' + (result.message || 'Unknown error'), 'red');
+                    showStatus('Error: ' + result.message, 'red');
                 }
             } catch (error) {
-                console.error(error);
-                showStatus('Network error while syncing. Check your URL.', 'red');
+                showStatus('Network error while syncing.', 'red');
             } finally {
                 btn.innerHTML = originalHTML;
                 btn.disabled = false;
+            }
+        }
+
+        async function loadFromSheets(isAutoLoad = false) {
+            if(!appScriptUrl) return;
+            
+            const btn = document.getElementById('btn-load');
+            const originalHTML = btn.innerHTML;
+            if(!isAutoLoad) btn.innerHTML = `Loading...`;
+
+            try {
+                const response = await fetch(`${appScriptUrl}?action=read`);
+                const result = await response.json();
+                
+                if(result.status === 'success') {
+                    // Sync Configuration from Metadata
+                    if(result.metadata) {
+                        CATEGORIES = result.metadata.categories;
+                        ITEMS = result.metadata.items;
+                        saveConfig(); // Update local storage
+                        renderSettingsItems();
+                        updateDropdowns();
+                    }
+
+                    // Sync Transactions
+                    stockIn = [];
+                    stockOut = [];
+                    result.data.forEach((row, index) => {
+                        if(row[0] && row[1] && row[2]) stockIn.push({ id: `in_${index}`, date: row[0], item: row[1], qty: parseInt(row[2]) || 0 });
+                        if(row[3] && row[4] && row[5]) stockOut.push({ id: `out_${index}`, date: row[3], item: row[4], qty: parseInt(row[5]) || 0 });
+                    });
+                    
+                    renderApp();
+                    if(!isAutoLoad) showStatus('Data and settings loaded successfully!', 'green');
+                }
+            } catch (error) {
+                if(!isAutoLoad) showStatus('Failed to load data.', 'red');
+            } finally {
+                if(!isAutoLoad) btn.innerHTML = originalHTML;
             }
         }
 
@@ -715,26 +754,36 @@
                 const response = await fetch(`${appScriptUrl}?action=read`);
                 const result = await response.json();
                 
-                if(result.status === 'success' && result.data) {
+                if(result.status === 'success') {
+                    // 1. Sync Configuration if metadata exists
+                    if(result.metadata) {
+                        CATEGORIES = result.metadata.categories;
+                        ITEMS = result.metadata.items;
+                        saveConfig();
+                        renderSettingsItems();
+                        updateDropdowns();
+                    }
+
+                    // 2. Sync Transactions
                     stockIn = [];
                     stockOut = [];
-                    
-                    // Parse 2D sheet array back into independent lists
-                    result.data.forEach((row, index) => {
-                        if(row[0] && row[1] && row[2]) {
-                            stockIn.push({ id: `in_${index}`, date: row[0], item: row[1], qty: parseInt(row[2]) || 0 });
-                        }
-                        if(row[3] && row[4] && row[5]) {
-                            stockOut.push({ id: `out_${index}`, date: row[3], item: row[4], qty: parseInt(row[5]) || 0 });
-                        }
-                    });
+                    if (result.data) {
+                        result.data.forEach((row, index) => {
+                            if(row[0] && row[1] && row[2]) {
+                                stockIn.push({ id: `in_${index}`, date: row[0], item: row[1], qty: parseInt(row[2]) || 0 });
+                            }
+                            if(row[3] && row[4] && row[5]) {
+                                stockOut.push({ id: `out_${index}`, date: row[3], item: row[4], qty: parseInt(row[5]) || 0 });
+                            }
+                        });
+                    }
                     
                     renderApp();
-                    if(!isAutoLoad) showStatus('Data loaded from Google Sheets successfully!', 'green');
+                    if(!isAutoLoad) showStatus('Data and settings loaded successfully!', 'green');
                 }
             } catch (error) {
                 console.error(error);
-                if(!isAutoLoad) showStatus('Failed to load data. Ensure your URL is correct.', 'red');
+                if(!isAutoLoad) showStatus('Failed to load data.', 'red');
             } finally {
                 if(!isAutoLoad) {
                     btn.innerHTML = originalHTML;
@@ -742,6 +791,93 @@
                 }
             }
         }
+
+                const response = await fetch(appScriptUrl, {
+                    method: 'POST',
+                    body: JSON.stringify(payload),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                });
+<!-- ... existing code ... -->
+```
+
+### 2. Update `loadFromSheets()`
+Update `loadFromSheets` to extract `metadata` from the response and update the global `CATEGORIES` and `ITEMS` variables.
+
+```javascript:Inventory Tracker:index.html
+<!-- ... existing code ... -->
+            try {
+                const response = await fetch(`${appScriptUrl}?action=read`);
+                const result = await response.json();
+                
+                if(result.status === 'success' && result.data) {
+                    // Sync Configuration if metadata exists
+                    if(result.metadata) {
+                        CATEGORIES = result.metadata.categories;
+                        ITEMS = result.metadata.items;
+                        saveConfig(); // Save to local storage
+                        renderSettingsItems();
+                        updateDropdowns();
+                    }
+
+                    stockIn = [];
+                    stockOut = [];
+                    
+                    // Parse 2D sheet array back into independent lists
+                    result.data.forEach((row, index) => {
+<!-- ... existing code ... -->
+```
+
+### 3. Update your Apps Script (`Code.gs`)
+Finally, your Google Apps Script needs to be updated to accept and return this `metadata`. **Update your `Code.gs` in the Google Apps Script editor:**
+
+```javascript:Apps Script Backend:Code.gs
+// ==========================================
+// REPLACE YOUR EXISTING CODE.GS
+// ==========================================
+const SHEET_NAME = 'Sheet1';
+
+function doPost(e) {
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+    const parsedData = JSON.parse(e.postData.contents);
+    
+    if (parsedData.action === 'write') {
+      // 1. Write Metadata to Row 1
+      if (parsedData.metadata) {
+        sheet.getRange(1, 1).setValue(JSON.stringify(parsedData.metadata));
+      }
+      
+      // 2. Write Data from Row 3 onwards
+      const dataMatrix = parsedData.data;
+      const lastRow = sheet.getLastRow();
+      if(lastRow >= 3) sheet.getRange(3, 1, lastRow - 2, 8).clearContent();
+      if (dataMatrix.length > 0) sheet.getRange(3, 1, dataMatrix.length, 8).setValues(dataMatrix);
+      
+      return ContentService.createTextOutput(JSON.stringify({ status: 'success' })).setMimeType(ContentService.MimeType.JSON);
+    }
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: error.toString() })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doGet(e) {
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+    
+    // 1. Fetch Metadata from Row 1
+    const metadataStr = sheet.getRange(1, 1).getValue();
+    const metadata = metadataStr ? JSON.parse(metadataStr) : null;
+    
+    // 2. Fetch Data from Row 3 onwards
+    const lastRow = sheet.getLastRow();
+    let data = [];
+    if (lastRow >= 3) data = sheet.getRange(3, 1, lastRow - 2, 8).getDisplayValues();
+    
+    return ContentService.createTextOutput(JSON.stringify({ status: 'success', data: data, metadata: metadata })).setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: error.toString() })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
     </script>
 </body>
 </html>
