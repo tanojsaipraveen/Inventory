@@ -4,9 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventory Management App</title>
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        /* Hide scrollbar for a cleaner look in tables and sidebar */
+        /* Custom styles */
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -14,59 +31,89 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+        @keyframes swing {
+            0%, 100% { transform: rotate(0deg); }
+            20% { transform: rotate(10deg); }
+            40% { transform: rotate(-8deg); }
+            60% { transform: rotate(4deg); }
+            80% { transform: rotate(-4deg); }
+        }
+        .animate-swing {
+            animation: swing 2s infinite ease-in-out;
+        }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans overflow-hidden">
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-sans overflow-hidden transition-colors duration-200">
 
     <div class="flex h-screen w-full">
         
-        <!-- Sidebar Navigation -->
-        <aside class="w-64 bg-white border-r border-gray-200 flex flex-col hidden md:flex flex-shrink-0 z-20">
+        <!-- Sidebar Navigation (Desktop) -->
+        <aside class="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col hidden md:flex flex-shrink-0 z-20">
             <!-- App Branding -->
-            <div class="h-16 flex items-center px-6 border-b border-gray-200">
-                <svg class="w-8 h-8 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
-                <h1 class="text-xl font-bold text-gray-900 tracking-tight">StockManager</h1>
+            <div class="h-16 flex items-center px-6 border-b border-slate-200 dark:border-slate-700 gap-3">
+                <div class="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-200 dark:shadow-none">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                </div>
+                <h1 class="text-lg font-bold tracking-tight text-slate-900 dark:text-white">StockManager</h1>
             </div>
             
             <!-- Navigation Links -->
-            <nav class="flex-1 py-4 flex flex-col gap-1 px-3 overflow-y-auto">
-                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg bg-blue-50 text-blue-700 transition">
+            <nav class="flex-1 py-6 flex flex-col gap-1 px-4 overflow-y-auto">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 transition">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
                     Dashboard
                 </button>
-                <button onclick="switchTab('record')" id="nav-record" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition">
+                <button onclick="switchTab('record')" id="nav-record" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white transition">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     Record Stock
                 </button>
-                <button onclick="switchTab('history')" id="nav-history" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition">
+                <button onclick="switchTab('history')" id="nav-history" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white transition">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     History
                 </button>
-                <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition mt-auto">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                    Settings
-                </button>
+                
+                <div class="mt-auto pt-4 border-t border-slate-100 dark:border-slate-700 flex flex-col gap-1">
+                    <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        Settings
+                    </button>
+                    <!-- Theme Toggle -->
+                    <button onclick="toggleDarkMode()" class="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white transition">
+                        <svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                        <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z"></path></svg>
+                        <span class="block dark:hidden">Dark Mode</span>
+                        <span class="hidden dark:block">Light Mode</span>
+                    </button>
+                </div>
             </nav>
         </aside>
 
         <!-- Main Content Wrapper -->
         <div class="flex-1 flex flex-col h-screen overflow-hidden">
             
-            <!-- Top Header (Sync Buttons & Mobile Nav) -->
-            <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-6 lg:px-8 shadow-sm shrink-0">
-                <!-- Mobile Menu Toggle -->
-                <button onclick="toggleMobileSidebar()" class="md:hidden p-2 text-gray-500 hover:text-gray-700">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                </button>
+            <!-- Top Header -->
+            <header class="h-16 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between px-6 shadow-sm shrink-0 z-10">
+                <!-- Mobile Menu & Title -->
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleMobileSidebar()" class="md:hidden p-2 -ml-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white rounded-lg">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    </button>
+                    <h2 id="page-title" class="text-lg font-bold text-slate-800 dark:text-white">Dashboard</h2>
+                </div>
                 
-                <h2 id="page-title" class="text-lg font-bold text-gray-800 hidden md:block">Dashboard</h2>
-                
-                <div class="flex items-center gap-2 md:gap-3 ml-auto">
-                    <button onclick="loadFromSheets()" id="btn-load" class="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-white border border-gray-300 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-50 transition shadow-sm">
-                        <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                <!-- Action Buttons / Theme Switch (Mobile) -->
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <!-- Theme switch (Header button for easy mobile reach) -->
+                    <button onclick="toggleDarkMode()" class="md:hidden p-2 text-slate-500 dark:text-slate-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">
+                        <svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                        <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z"></path></svg>
+                    </button>
+
+                    <button onclick="loadFromSheets()" id="btn-load" class="flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-white dark:bg-slate-750 border border-slate-300 dark:border-slate-600 text-sm font-medium rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-sm">
+                        <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                         <span class="hidden sm:inline">Load Sheets</span>
                     </button>
-                    <button onclick="saveToSheets()" id="btn-save" class="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-blue-600 text-sm font-medium rounded-lg text-white hover:bg-blue-700 transition shadow-sm">
+                    <button onclick="saveToSheets()" id="btn-save" class="flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-indigo-600 text-sm font-medium rounded-xl text-white hover:bg-indigo-700 transition shadow-sm">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                         <span class="hidden sm:inline">Sync to Sheets</span>
                     </button>
@@ -74,112 +121,195 @@
             </header>
 
             <!-- Scrollable Page Content -->
-            <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 relative">
+            <main class="flex-1 overflow-y-auto p-6 lg:p-8 relative no-scrollbar">
                 
-                <!-- Status Banner -->
-                <div id="status-banner" class="hidden mb-6 p-4 rounded-lg text-sm font-medium flex items-center justify-between shadow-sm sticky top-0 z-10">
-                    <span id="status-message"></span>
-                    <button onclick="this.parentElement.classList.add('hidden')" class="text-current opacity-70 hover:opacity-100">&times;</button>
-                </div>
-
                 <!-- ================= PAGES ================= -->
 
                 <!-- PAGE 1: Dashboard -->
-                <div id="view-dashboard" class="app-view">
+                <div id="view-dashboard" class="app-view space-y-6">
+                    <!-- Stats Section -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl p-5 shadow-sm flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                            </div>
+                            <div>
+                                <span class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Total Items</span>
+                                <span id="stat-total-items" class="text-2xl font-bold text-slate-800 dark:text-white">0</span>
+                            </div>
+                        </div>
+                        
+                        <div id="stat-low-stock-card" class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl p-5 shadow-sm flex items-center gap-4 cursor-pointer hover:border-amber-300 dark:hover:border-amber-700 transition" onclick="toggleDashboardLowStockFilter(true)">
+                            <div class="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                                <svg class="w-6 h-6 animate-swing" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            </div>
+                            <div>
+                                <span class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Low Stock Alerts</span>
+                                <span id="stat-low-stock" class="text-2xl font-bold text-amber-600 dark:text-amber-400">0</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl p-5 shadow-sm flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                            </div>
+                            <div>
+                                <span class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Activity Logs</span>
+                                <span id="stat-total-logs" class="text-2xl font-bold text-slate-800 dark:text-white">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Low Stock Alert Banner -->
+                    <div id="dashboard-low-stock-banner" class="hidden bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300 p-4 rounded-xl border border-amber-200 dark:border-amber-800/40 text-sm flex items-center justify-between shadow-sm">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            <span>Currently showing <strong>only low stock items</strong>.</span>
+                        </div>
+                        <button onclick="toggleDashboardLowStockFilter(false)" class="underline font-semibold hover:text-amber-955 dark:hover:text-amber-100 transition">Show All Items</button>
+                    </div>
+
                     <div class="mb-6">
-                        <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                        <h2 class="text-md font-bold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2 uppercase tracking-wider">
+                            <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                             Current Inventory Balance
                         </h2>
-                        <!-- Cards -->
-                        <div id="balance-cards" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"></div>
-                        <div id="no-items-warning" class="hidden bg-yellow-50 text-yellow-800 p-4 rounded-lg border border-yellow-200 text-sm">
-                            No items are currently being tracked. Go to Settings to add items.
+                        <!-- Cards Grid -->
+                        <div id="balance-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"></div>
+                        
+                        <div id="no-items-warning" class="hidden bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 p-8 rounded-2xl border border-slate-200 dark:border-slate-700 text-center space-y-3">
+                            <svg class="w-12 h-12 text-slate-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                            <p class="text-sm font-medium">No items are currently being tracked.</p>
+                            <button onclick="switchTab('settings')" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-semibold hover:bg-indigo-700 transition">Go to Settings & Add Items</button>
                         </div>
                     </div>
                 </div>
 
                 <!-- PAGE 2: Record Stock -->
                 <div id="view-record" class="app-view hidden">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl">
                         
                         <!-- Stock In Form -->
-                        <div class="bg-white rounded-xl shadow-sm border border-blue-100 overflow-hidden h-fit">
-                            <div class="bg-blue-50 border-b border-blue-100 p-4">
-                                <h3 class="font-bold text-blue-800 flex items-center gap-2">
+                        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden h-fit">
+                            <div class="bg-indigo-50 dark:bg-indigo-950/20 border-b border-indigo-100 dark:border-indigo-950/40 p-5">
+                                <h3 class="font-bold text-indigo-900 dark:text-indigo-400 flex items-center gap-2">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                                     Record Stock In
                                 </h3>
                             </div>
-                            <form onsubmit="handleAddStock(event, 'in')" class="p-5 space-y-4">
+                            <form onsubmit="handleAddStock(event, 'in')" class="p-6 space-y-4">
                                 <div>
-                                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Date</label>
-                                    <input type="date" id="in-date" required class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
+                                    <label class="block text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Date</label>
+                                    <input type="date" id="in-date" required class="w-full border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 bg-slate-50 dark:bg-slate-750 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Item</label>
-                                    <select id="in-item" required class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                                    <label class="block text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Item</label>
+                                    <select id="in-item" onchange="handleItemSelect('in')" required class="w-full border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 bg-slate-50 dark:bg-slate-750 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-slate-750">
                                         <!-- Injected by JS -->
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Quantity</label>
-                                    <input type="number" id="in-qty" min="1" required class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
+                                    <label class="block text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Quantity</label>
+                                    <div class="relative flex items-center">
+                                        <input type="number" id="in-qty" min="1" required class="w-full border border-slate-200 dark:border-slate-600 rounded-xl pl-4 pr-16 py-2.5 bg-slate-50 dark:bg-slate-750 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none">
+                                        <span id="in-unit-badge" class="absolute right-3 text-xs font-semibold text-slate-400 bg-white dark:bg-slate-850 px-2 py-1 rounded border border-slate-200 dark:border-slate-600">pcs</span>
+                                    </div>
                                 </div>
-                                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition mt-2">Add Stock In</button>
+                                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl transition shadow-md shadow-indigo-100 dark:shadow-none mt-2">Add Stock In</button>
                             </form>
                         </div>
 
                         <!-- Stock Out Form -->
-                        <div class="bg-white rounded-xl shadow-sm border border-red-100 overflow-hidden h-fit">
-                            <div class="bg-red-50 border-b border-red-100 p-4">
-                                <h3 class="font-bold text-red-800 flex items-center gap-2">
+                        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden h-fit">
+                            <div class="bg-rose-50 dark:bg-rose-950/20 border-b border-rose-100 dark:border-rose-950/40 p-5">
+                                <h3 class="font-bold text-rose-900 dark:text-rose-400 flex items-center gap-2">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
                                     Record Stock Out
                                 </h3>
                             </div>
-                            <form onsubmit="handleAddStock(event, 'out')" class="p-5 space-y-4">
+                            <form onsubmit="handleAddStock(event, 'out')" class="p-6 space-y-4">
                                 <div>
-                                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Date</label>
-                                    <input type="date" id="out-date" required class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-red-500 outline-none">
+                                    <label class="block text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Date</label>
+                                    <input type="date" id="out-date" required class="w-full border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 bg-slate-50 dark:bg-slate-750 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Item</label>
-                                    <select id="out-item" required class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-red-500 outline-none bg-white">
+                                    <label class="block text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Item</label>
+                                    <select id="out-item" onchange="handleItemSelect('out')" required class="w-full border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 bg-slate-50 dark:bg-slate-750 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-slate-750">
                                         <!-- Injected by JS -->
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Quantity</label>
-                                    <input type="number" id="out-qty" min="1" required class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-red-500 outline-none">
+                                    <label class="block text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Quantity</label>
+                                    <div class="relative flex items-center">
+                                        <input type="number" id="out-qty" min="1" required class="w-full border border-slate-200 dark:border-slate-600 rounded-xl pl-4 pr-16 py-2.5 bg-slate-50 dark:bg-slate-750 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none">
+                                        <span id="out-unit-badge" class="absolute right-3 text-xs font-semibold text-slate-400 bg-white dark:bg-slate-850 px-2 py-1 rounded border border-slate-200 dark:border-slate-600">pcs</span>
+                                    </div>
                                 </div>
-                                <button type="submit" class="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-2.5 rounded-lg transition mt-2">Record Stock Out</button>
+                                <button type="submit" class="w-full bg-rose-500 hover:bg-rose-600 text-white font-semibold py-2.5 rounded-xl transition shadow-md shadow-rose-100 dark:shadow-none mt-2">Record Stock Out</button>
                             </form>
                         </div>
                     </div>
                 </div>
 
                 <!-- PAGE 3: History -->
-                <div id="view-history" class="app-view hidden">
-                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                <div id="view-history" class="app-view space-y-6">
+                    
+                    <!-- Filters Panel -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm items-end">
+                        <!-- Search -->
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Search Items</label>
+                            <input type="text" id="history-search" oninput="handleHistoryFilterChange()" placeholder="Type item name..." class="w-full text-sm border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-750 text-slate-800 dark:text-white rounded-xl px-3.5 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+                        <!-- Category Filter -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Category</label>
+                            <select id="history-category" onchange="handleHistoryFilterChange()" class="w-full text-sm border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-750 text-slate-800 dark:text-white rounded-xl px-3.5 py-2 focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-slate-750">
+                                <!-- Dynamic options -->
+                            </select>
+                        </div>
+                        <!-- Date Start -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">From Date</label>
+                            <input type="date" id="history-date-start" onchange="handleHistoryFilterChange()" class="w-full text-sm border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-750 text-slate-800 dark:text-white rounded-xl px-3 py-1.5 focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+                        <!-- Date End -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">To Date</label>
+                            <input type="date" id="history-date-end" onchange="handleHistoryFilterChange()" class="w-full text-sm border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-750 text-slate-800 dark:text-white rounded-xl px-3 py-1.5 focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+                        <!-- Reset Buttons -->
+                        <div class="flex gap-2">
+                            <button onclick="resetHistoryFilters()" class="w-full px-3 py-2 text-xs font-semibold bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl transition">Clear Filters</button>
+                        </div>
+                    </div>
+
+                    <!-- Type Selector tabs -->
+                    <div class="flex border-b border-slate-200 dark:border-slate-700 gap-6">
+                        <button onclick="setHistoryTypeFilter('all')" id="btn-filter-all" class="pb-3 text-sm font-semibold text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 transition">All Logs</button>
+                        <button onclick="setHistoryTypeFilter('in')" id="btn-filter-in" class="pb-3 text-sm font-semibold text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 border-b-2 border-transparent transition">Stock In Logs Only</button>
+                        <button onclick="setHistoryTypeFilter('out')" id="btn-filter-out" class="pb-3 text-sm font-semibold text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 border-b-2 border-transparent transition">Stock Out Logs Only</button>
+                    </div>
+
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6" id="history-tables-container">
                         
                         <!-- Stock In History -->
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[70vh]">
-                            <div class="bg-gray-50 border-b border-gray-200 p-4 flex justify-between items-center shrink-0">
-                                <h3 class="font-bold text-gray-700">Stock In Log</h3>
-                                <span class="text-xs font-medium bg-blue-100 text-blue-800 px-2 py-1 rounded-full" id="in-count">0 items</span>
+                        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden flex flex-col h-[60vh]" id="stock-in-history-panel">
+                            <div class="bg-slate-50 dark:bg-slate-750 border-b border-slate-100 dark:border-slate-700 p-4 flex justify-between items-center shrink-0">
+                                <h3 class="font-bold text-slate-700 dark:text-white">Stock In Log</h3>
+                                <span class="text-xs font-semibold bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 px-2.5 py-1 rounded-full border border-indigo-100 dark:border-indigo-900" id="in-count">0 items</span>
                             </div>
                             <div class="overflow-y-auto flex-1 no-scrollbar">
                                 <table class="w-full text-sm text-left">
-                                    <thead class="text-xs text-gray-500 uppercase bg-white sticky top-0 border-b border-gray-100 shadow-sm z-10">
+                                    <thead class="text-xs text-slate-400 uppercase bg-slate-50 dark:bg-slate-750 sticky top-0 border-b border-slate-100 dark:border-slate-700 shadow-sm z-10">
                                         <tr>
                                             <th class="px-4 py-3">Date</th>
                                             <th class="px-4 py-3">Item Name</th>
                                             <th class="px-4 py-3 text-right">Qty</th>
-                                            <th class="px-4 py-3 text-center">Act</th>
+                                            <th class="px-4 py-3 text-center">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="in-table-body" class="divide-y divide-gray-100">
+                                    <tbody id="in-table-body" class="divide-y divide-slate-100 dark:divide-slate-700">
                                         <!-- Injected via JS -->
                                     </tbody>
                                 </table>
@@ -187,22 +317,22 @@
                         </div>
 
                         <!-- Stock Out History -->
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[70vh]">
-                            <div class="bg-gray-50 border-b border-gray-200 p-4 flex justify-between items-center shrink-0">
-                                <h3 class="font-bold text-gray-700">Stock Out Log</h3>
-                                <span class="text-xs font-medium bg-red-100 text-red-800 px-2 py-1 rounded-full" id="out-count">0 items</span>
+                        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden flex flex-col h-[60vh]" id="stock-out-history-panel">
+                            <div class="bg-slate-50 dark:bg-slate-750 border-b border-slate-100 dark:border-slate-700 p-4 flex justify-between items-center shrink-0">
+                                <h3 class="font-bold text-slate-700 dark:text-white">Stock Out Log</h3>
+                                <span class="text-xs font-semibold bg-rose-50 dark:bg-rose-950 text-rose-700 dark:text-rose-300 px-2.5 py-1 rounded-full border border-rose-100 dark:border-rose-900" id="out-count">0 items</span>
                             </div>
                             <div class="overflow-y-auto flex-1 no-scrollbar">
                                 <table class="w-full text-sm text-left">
-                                    <thead class="text-xs text-gray-500 uppercase bg-white sticky top-0 border-b border-gray-100 shadow-sm z-10">
+                                    <thead class="text-xs text-slate-400 uppercase bg-slate-50 dark:bg-slate-750 sticky top-0 border-b border-slate-100 dark:border-slate-700 shadow-sm z-10">
                                         <tr>
                                             <th class="px-4 py-3">Date</th>
                                             <th class="px-4 py-3">Item Name</th>
                                             <th class="px-4 py-3 text-right">Qty</th>
-                                            <th class="px-4 py-3 text-center">Act</th>
+                                            <th class="px-4 py-3 text-center">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="out-table-body" class="divide-y divide-gray-100">
+                                    <tbody id="out-table-body" class="divide-y divide-slate-100 dark:divide-slate-700">
                                         <!-- Injected via JS -->
                                     </tbody>
                                 </table>
@@ -213,30 +343,30 @@
 
                 <!-- PAGE 4: Settings -->
                 <div id="view-settings" class="app-view hidden">
-                    <div class="max-w-3xl space-y-8">
+                    <div class="max-w-3xl space-y-6">
                         
                         <!-- Sync Setup Section -->
-                        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                            <h3 class="text-lg font-bold text-gray-800 mb-2">Google Sheets Sync configuration</h3>
-                            <p class="text-gray-500 text-sm mb-4">Paste your Google Apps Script Web App URL below to enable cloud synchronization. This allows you to backup and load your data across devices.</p>
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
+                            <h3 class="text-md font-bold text-slate-800 dark:text-white mb-2">Google Sheets Sync Configuration</h3>
+                            <p class="text-slate-400 dark:text-slate-550 text-sm mb-4">Paste your Google Apps Script Web App URL below to enable cloud synchronization. This allows you to backup and load your data across devices.</p>
                             
                             <div class="flex flex-col sm:flex-row gap-3">
-                                <input type="text" id="script-url" placeholder="https://script.google.com/macros/s/..." class="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm">
-                                <button onclick="saveSettings()" class="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition shadow-sm whitespace-nowrap">Save URL</button>
+                                <input type="text" id="script-url" placeholder="https://script.google.com/macros/s/..." class="flex-1 border border-slate-200 dark:border-slate-650 bg-slate-50 dark:bg-slate-750 text-slate-800 dark:text-white rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none transition text-sm">
+                                <button onclick="saveSettings()" class="px-6 py-2.5 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition shadow-sm whitespace-nowrap">Save URL</button>
                             </div>
                         </div>
 
                         <!-- Item Management Section -->
-                        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                            <h3 class="text-lg font-bold text-gray-800 mb-2">Manage Inventory Categories & Items</h3>
-                            <p class="text-gray-500 text-sm mb-4">Create categories (like Feed, Medicine) and add items to them. Changes are saved instantly.</p>
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
+                            <h3 class="text-md font-bold text-slate-800 dark:text-white mb-2">Manage Inventory Categories & Items</h3>
+                            <p class="text-slate-400 dark:text-slate-550 text-sm mb-4">Create categories (like Feed, Medicine) and add items to them. Changes are saved instantly.</p>
                             
                             <!-- Categories -->
-                            <div class="mb-5 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                <h4 class="text-sm font-semibold text-gray-700 mb-3">1. Inventory Categories</h4>
+                            <div class="mb-6 p-5 bg-slate-50 dark:bg-slate-750 rounded-xl border border-slate-200/60 dark:border-slate-700">
+                                <h4 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">1. Inventory Categories</h4>
                                 <div class="flex flex-col sm:flex-row gap-2 mb-3">
-                                    <input type="text" id="new-category-name" placeholder="E.g., Feed, Medicine..." class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                                    <button onclick="addCategory()" class="px-4 py-2 bg-blue-100 text-blue-700 hover:bg-blue-200 font-medium rounded-lg transition whitespace-nowrap text-sm">Add Category</button>
+                                    <input type="text" id="new-category-name" placeholder="E.g., Feed, Medicine..." class="flex-1 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                                    <button onclick="addCategory()" class="px-4 py-2 bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900 border border-indigo-100 dark:border-indigo-800/40 font-semibold rounded-xl transition whitespace-nowrap text-sm">Add Category</button>
                                 </div>
                                 <div id="settings-category-list" class="flex flex-wrap gap-2">
                                     <!-- Injected via JS -->
@@ -245,16 +375,23 @@
 
                             <!-- Items -->
                             <div>
-                                <h4 class="text-sm font-semibold text-gray-700 mb-3">2. Inventory Items</h4>
-                                <div class="flex flex-col sm:flex-row gap-2 mb-4">
-                                    <select id="new-item-category" class="w-full sm:w-1/3 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                                <h4 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">2. Add Inventory Items</h4>
+                                <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 mb-4">
+                                    <select id="new-item-category" class="sm:col-span-3 border border-slate-200 dark:border-slate-650 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-white rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-slate-750">
                                         <!-- Injected via JS -->
                                     </select>
-                                    <input type="text" id="new-item-name" placeholder="Item Name..." class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                                    <button onclick="addNewItem()" class="px-4 py-2 bg-gray-800 text-white font-medium rounded-lg hover:bg-gray-700 transition whitespace-nowrap text-sm">Add Item</button>
+                                    <input type="text" id="new-item-name" placeholder="Item Name (e.g. Corn)" class="sm:col-span-4 border border-slate-200 dark:border-slate-650 bg-slate-50 dark:bg-slate-750 text-slate-800 dark:text-white rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                                    <input type="text" id="new-item-unit" placeholder="Unit (e.g. kg, bags)" class="sm:col-span-2 border border-slate-200 dark:border-slate-650 bg-slate-50 dark:bg-slate-750 text-slate-800 dark:text-white rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                                    <input type="number" id="new-item-min" placeholder="Min Stock" min="0" value="5" class="sm:col-span-2 border border-slate-200 dark:border-slate-650 bg-slate-50 dark:bg-slate-750 text-slate-800 dark:text-white rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                                    <button onclick="addNewItem()" class="sm:col-span-1 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition whitespace-nowrap text-sm flex items-center justify-center">+</button>
                                 </div>
-                                <div class="border border-gray-200 rounded-lg overflow-hidden">
-                                    <ul id="settings-item-list" class="divide-y divide-gray-100 max-h-64 overflow-y-auto no-scrollbar bg-white">
+
+                                <!-- Item List Table/View -->
+                                <div class="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-slate-800">
+                                    <div class="p-3 bg-slate-50 dark:bg-slate-750 border-b border-slate-100 dark:border-slate-700 flex gap-2">
+                                        <input type="text" id="settings-search-item" oninput="renderSettingsItems()" placeholder="Search items list..." class="w-full text-xs border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-indigo-500 outline-none">
+                                    </div>
+                                    <ul id="settings-item-list" class="divide-y divide-slate-100 dark:divide-slate-700 max-h-64 overflow-y-auto no-scrollbar bg-white dark:bg-slate-800">
                                         <!-- Injected via JS -->
                                     </ul>
                                 </div>
@@ -268,94 +405,159 @@
         </div>
         
         <!-- Mobile Sidebar Overlay -->
-        <div id="mobile-sidebar-overlay" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-10 hidden md:hidden"></div>
+        <div id="mobile-sidebar-overlay" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-slate-900/50 dark:bg-slate-950/70 z-10 hidden md:hidden transition-opacity"></div>
     </div>
+
+    <!-- Floating Toast Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full px-4 sm:px-0"></div>
 
     <script>
         // --- Core Data Model ---
         let CATEGORIES = ['General'];
         let ITEMS = [];
 
+        // Escape HTML function to prevent XSS
+        function escapeHtml(str) {
+            if (str === undefined || str === null) return '';
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // --- Configuration Persistence ---
         const savedSettings = localStorage.getItem('inventorySettings');
         if (savedSettings) {
             const parsed = JSON.parse(savedSettings);
             CATEGORIES = parsed.categories || ['General'];
             ITEMS = parsed.items || [];
+            
+            // Map legacy array structure into fully updated structure
+            ITEMS = ITEMS.map(item => ({
+                name: item.name,
+                category: item.category || 'General',
+                minQty: typeof item.minQty === 'number' ? item.minQty : 5,
+                unit: item.unit || 'pcs'
+            }));
         } else {
-            // Backwards compatibility migration
+            // Migration support for old inventory lists
             const legacyItems = localStorage.getItem('inventoryItems');
             if (legacyItems) {
                 const parsed = JSON.parse(legacyItems);
-                ITEMS = parsed.map(item => ({ name: item, category: 'General' }));
+                ITEMS = parsed.map(item => ({ name: item, category: 'General', minQty: 5, unit: 'pcs' }));
             } else {
                 CATEGORIES = ['Feed', 'Medicine', 'Equipment'];
                 ITEMS = [
-                    { name: 'Corn (50kg)', category: 'Feed' },
-                    { name: 'Wheat (50kg)', category: 'Feed' },
-                    { name: 'Paracetamol', category: 'Medicine' },
-                    { name: 'Bandages', category: 'Medicine' }
+                    { name: 'Corn (50kg)', category: 'Feed', minQty: 5, unit: 'bags' },
+                    { name: 'Wheat (50kg)', category: 'Feed', minQty: 5, unit: 'bags' },
+                    { name: 'Paracetamol', category: 'Medicine', minQty: 10, unit: 'boxes' },
+                    { name: 'Bandages', category: 'Medicine', minQty: 15, unit: 'pcs' }
                 ];
             }
+            saveConfig();
         }
         
         function saveConfig() {
             localStorage.setItem('inventorySettings', JSON.stringify({ categories: CATEGORIES, items: ITEMS }));
         }
-        
+
+        // --- Transactions Local Storage Persistence ---
         let stockIn = [];
         let stockOut = [];
         
+        const savedStockIn = localStorage.getItem('inventoryStockIn');
+        const savedStockOut = localStorage.getItem('inventoryStockOut');
+        if (savedStockIn) stockIn = JSON.parse(savedStockIn);
+        if (savedStockOut) stockOut = JSON.parse(savedStockOut);
+
+        function saveStockData() {
+            localStorage.setItem('inventoryStockIn', JSON.stringify(stockIn));
+            localStorage.setItem('inventoryStockOut', JSON.stringify(stockOut));
+        }
+
         let appScriptUrl = localStorage.getItem('googleSheetsScriptUrl') || '';
+
+        // --- History Tab Filters State ---
+        let historySearchQuery = '';
+        let historyCategoryFilter = '';
+        let historyDateStart = '';
+        let historyDateEnd = '';
+        let historyTypeFilter = 'all'; 
+
+        // Dashboard low stock toggle state
+        let dashboardShowOnlyLowStock = false;
 
         // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Set today's date in forms
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('in-date').value = today;
-            document.getElementById('out-date').value = today;
+            // Setup default date picker inputs to local today date
+            const localTodayStr = new Date().toLocaleDateString('sv'); // YYYY-MM-DD
+            const inDateEl = document.getElementById('in-date');
+            const outDateEl = document.getElementById('out-date');
+            if (inDateEl) inDateEl.value = localTodayStr;
+            if (outDateEl) outDateEl.value = localTodayStr;
+
+            // Load theme configuration
+            if (localStorage.getItem('darkMode') === 'enabled') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
 
             updateDropdowns();
             renderSettingsItems();
 
             if (appScriptUrl) {
-                document.getElementById('script-url').value = appScriptUrl;
-                // Auto load if URL exists
+                const scriptUrlEl = document.getElementById('script-url');
+                if (scriptUrlEl) scriptUrlEl.value = appScriptUrl;
+                // Auto load Sheets content silently on load
                 loadFromSheets(true); 
             } else {
                 renderApp();
             }
         });
 
-        // --- Navigation Logic ---
+        // --- Dark Mode Controller ---
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
+        }
+
+        // --- Navigation Controller ---
         function switchTab(tabId) {
-            // Hide all views
+            // Hide all tab views
             document.querySelectorAll('.app-view').forEach(view => {
                 view.classList.add('hidden');
             });
-            // Show target view
-            document.getElementById(`view-${tabId}`).classList.remove('hidden');
+            // Display targeted tab view
+            const targetView = document.getElementById(`view-${tabId}`);
+            if (targetView) targetView.classList.remove('hidden');
 
-            // Update sidebar styles
+            // Toggle sidebar button styles
             document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('bg-blue-50', 'text-blue-700');
-                btn.classList.add('text-gray-600', 'hover:bg-gray-100', 'hover:text-gray-900');
+                btn.classList.remove('bg-indigo-50', 'dark:bg-indigo-900/40', 'text-indigo-600', 'dark:text-indigo-400');
+                btn.classList.add('text-slate-500', 'dark:text-slate-400', 'hover:bg-slate-100', 'dark:hover:bg-slate-700/50', 'hover:text-slate-900', 'dark:hover:text-white');
             });
             const activeBtn = document.getElementById(`nav-${tabId}`);
-            activeBtn.classList.remove('text-gray-600', 'hover:bg-gray-100', 'hover:text-gray-900');
-            activeBtn.classList.add('bg-blue-50', 'text-blue-700');
+            if (activeBtn) {
+                activeBtn.classList.remove('text-slate-500', 'dark:text-slate-400', 'hover:bg-slate-100', 'dark:hover:bg-slate-700/50', 'hover:text-slate-900', 'dark:hover:text-white');
+                activeBtn.classList.add('bg-indigo-50', 'dark:bg-indigo-900/40', 'text-indigo-600', 'dark:text-indigo-400');
+            }
 
-            // Update Header Title
+            // Sync Header title
             const titles = {
-                'dashboard': 'Dashboard',
-                'record': 'Record Stock',
-                'history': 'Transaction History',
-                'settings': 'Settings & Configuration'
+                'dashboard': 'Dashboard Overview',
+                'record': 'Record Inventory Transactions',
+                'history': 'Transaction History Log',
+                'settings': 'Settings & Cloud Sync'
             };
-            document.getElementById('page-title').innerText = titles[tabId];
+            const pageTitleEl = document.getElementById('page-title');
+            if (pageTitleEl) pageTitleEl.innerText = titles[tabId] || 'Inventory Management';
 
-            // Close mobile sidebar if open
+            // Close mobile sidebar menu drawer automatically
             const sidebar = document.querySelector('aside');
-            if (!sidebar.classList.contains('hidden') && window.innerWidth < 768) {
+            if (sidebar && !sidebar.classList.contains('hidden') && window.innerWidth < 768) {
                 toggleMobileSidebar();
             }
         }
@@ -363,111 +565,174 @@
         function toggleMobileSidebar() {
             const sidebar = document.querySelector('aside');
             const overlay = document.getElementById('mobile-sidebar-overlay');
+            if (!sidebar || !overlay) return;
             
             sidebar.classList.toggle('hidden');
-            sidebar.classList.toggle('absolute');
+            sidebar.classList.toggle('fixed');
             sidebar.classList.toggle('h-full');
+            sidebar.classList.toggle('top-0');
+            sidebar.classList.toggle('left-0');
             
             overlay.classList.toggle('hidden');
         }
 
-        // --- Dynamic Items Logic ---
+        // --- Dynamic Items Selector Lists ---
         function updateDropdowns() {
             let options = `<option value="" disabled selected>Select an item...</option>`;
             CATEGORIES.forEach(cat => {
                 const catItems = ITEMS.filter(i => i.category === cat);
-                if(catItems.length > 0) {
-                    options += `<optgroup label="${cat}">`;
+                if (catItems.length > 0) {
+                    options += `<optgroup label="${escapeHtml(cat)}">`;
                     catItems.forEach(item => {
-                        options += `<option value="${item.name}">${item.name}</option>`;
+                        options += `<option value="${escapeHtml(item.name)}">${escapeHtml(item.name)}</option>`;
                     });
                     options += `</optgroup>`;
                 }
             });
-            document.getElementById('in-item').innerHTML = options;
-            document.getElementById('out-item').innerHTML = options;
+            
+            const inItemSelect = document.getElementById('in-item');
+            const outItemSelect = document.getElementById('out-item');
+            if (inItemSelect) inItemSelect.innerHTML = options;
+            if (outItemSelect) outItemSelect.innerHTML = options;
+
+            // Trigger selector badges reset
+            handleItemSelect('in');
+            handleItemSelect('out');
+
+            // Category Filter in History Tab
+            updateHistoryCategoryFilterOptions();
         }
 
-        function renderSettingsItems() {
-            // Render Categories
-            const catList = document.getElementById('settings-category-list');
-            catList.innerHTML = CATEGORIES.map(cat => `
-                <span class="px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-sm flex items-center gap-2 font-medium">
-                    ${cat}
-                    <button onclick="removeCategory('${cat}')" class="text-blue-400 hover:text-red-500 transition" title="Remove Category">
-                        &times;
-                    </button>
-                </span>
-            `).join('');
-
-            // Render Category Dropdown for new items
-            document.getElementById('new-item-category').innerHTML = CATEGORIES.map(cat => `<option value="${cat}">${cat}</option>`).join('');
-
-            // Render Items
-            const list = document.getElementById('settings-item-list');
-            list.innerHTML = ITEMS.map(item => `
-                <li class="flex justify-between items-center bg-white px-4 py-3 hover:bg-gray-50 transition group">
-                    <div>
-                        <span class="text-sm font-medium text-gray-700 block">${item.name}</span>
-                        <span class="text-xs text-gray-500">${item.category}</span>
-                    </div>
-                    <button onclick="removeSettingItem('${item.name}')" class="text-gray-400 hover:text-red-500 p-1.5 rounded transition" title="Remove Item">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                    </button>
-                </li>
-            `).join('');
+        function handleItemSelect(type) {
+            const selectEl = document.getElementById(`${type}-item`);
+            const badgeEl = document.getElementById(`${type}-unit-badge`);
+            if (!selectEl || !badgeEl) return;
             
-            if (ITEMS.length === 0) {
-                list.innerHTML = `<li class="text-sm text-gray-400 italic text-center py-6 bg-white">No items in your inventory list.</li>`;
+            const selectedVal = selectEl.value;
+            const match = ITEMS.find(i => i.name === selectedVal);
+            badgeEl.textContent = match ? match.unit : 'pcs';
+        }
+
+        function updateHistoryCategoryFilterOptions() {
+            const select = document.getElementById('history-category');
+            if (!select) return;
+            const prevVal = select.value;
+            
+            let html = `<option value="">All Categories</option>`;
+            CATEGORIES.forEach(cat => {
+                html += `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`;
+            });
+            
+            select.innerHTML = html;
+            select.value = prevVal; // restore selection
+        }
+
+        // --- Manage Items Settings Panel ---
+        function renderSettingsItems() {
+            // Render category chips
+            const catList = document.getElementById('settings-category-list');
+            if (catList) {
+                catList.innerHTML = CATEGORIES.map(cat => `
+                    <span class="px-3 py-1 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/50 rounded-xl text-sm flex items-center gap-2 font-medium">
+                        ${escapeHtml(cat)}
+                        <button onclick="removeCategory('${escapeHtml(cat)}')" class="text-indigo-400 dark:text-indigo-650 hover:text-red-500 transition font-bold" title="Remove Category">
+                            &times;
+                        </button>
+                    </span>
+                `).join('');
+            }
+
+            // Render select category options in Add Item
+            const selectCatEl = document.getElementById('new-item-category');
+            if (selectCatEl) {
+                selectCatEl.innerHTML = CATEGORIES.map(cat => `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`).join('');
+            }
+
+            // Filter item list by search text
+            const searchInput = document.getElementById('settings-search-item');
+            const searchVal = searchInput ? searchInput.value.trim().toLowerCase() : '';
+            const filteredItems = ITEMS.filter(item => item.name.toLowerCase().includes(searchVal));
+
+            // Render settings items list
+            const listEl = document.getElementById('settings-item-list');
+            if (listEl) {
+                listEl.innerHTML = filteredItems.map(item => `
+                    <li class="flex justify-between items-center px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-750 transition group">
+                        <div class="min-w-0 flex-1">
+                            <span class="text-sm font-semibold text-slate-700 dark:text-white block truncate">${escapeHtml(item.name)}</span>
+                            <div class="flex flex-wrap gap-2 mt-1">
+                                <span class="text-xs text-slate-400 dark:text-slate-550">${escapeHtml(item.category)}</span>
+                                <span class="text-xs font-semibold px-1.5 py-0.2 bg-slate-100 dark:bg-slate-700 text-slate-555 dark:text-slate-400 rounded">Min: ${item.minQty} ${escapeHtml(item.unit)}</span>
+                            </div>
+                        </div>
+                        <button onclick="removeSettingItem('${escapeHtml(item.name)}')" class="text-slate-400 hover:text-rose-500 p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/20 transition shrink-0 ml-3" title="Remove Item">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </li>
+                `).join('');
+                
+                if (filteredItems.length === 0) {
+                    listEl.innerHTML = `<li class="text-xs text-slate-400 dark:text-slate-500 italic text-center py-6">No matching items found.</li>`;
+                }
             }
         }
 
         function addCategory() {
             const input = document.getElementById('new-category-name');
+            if (!input) return;
             const val = input.value.trim();
-            if(val && !CATEGORIES.includes(val)) {
+            if (val && !CATEGORIES.includes(val)) {
                 CATEGORIES.push(val);
                 saveConfig();
                 input.value = '';
                 renderSettingsItems();
                 updateDropdowns();
-                showStatus(`Added category "${val}".`, "green");
+                showToast(`Added category "${val}".`, "green");
             } else if (CATEGORIES.includes(val)) {
-                showStatus("Category already exists.", "red");
+                showToast("Category already exists.", "red");
             }
         }
 
         function removeCategory(cat) {
-            if(ITEMS.some(i => i.category === cat)) {
-                showStatus(`Cannot remove "${cat}". Please remove its items first.`, "red");
+            if (ITEMS.some(i => i.category === cat)) {
+                showToast(`Cannot remove "${cat}". Please remove its items first.`, "red");
                 return;
             }
-            if(CATEGORIES.length <= 1) {
-                showStatus("You must have at least one category.", "red");
+            if (CATEGORIES.length <= 1) {
+                showToast("You must have at least one category.", "red");
                 return;
             }
             CATEGORIES = CATEGORIES.filter(c => c !== cat);
             saveConfig();
             renderSettingsItems();
             updateDropdowns();
-            showStatus(`Removed category "${cat}".`, "blue");
+            showToast(`Removed category "${cat}".`, "indigo");
         }
 
         function addNewItem() {
             const input = document.getElementById('new-item-name');
-            const cat = document.getElementById('new-item-category').value;
-            const val = input.value.trim();
-            
-            if(val && !ITEMS.some(i => i.name === val)) {
-                ITEMS.push({ name: val, category: cat });
+            const selectCat = document.getElementById('new-item-category');
+            const unitInput = document.getElementById('new-item-unit');
+            const minInput = document.getElementById('new-item-min');
+            if (!input || !selectCat || !unitInput || !minInput) return;
+
+            const nameVal = input.value.trim();
+            const catVal = selectCat.value;
+            const unitVal = unitInput.value.trim() || 'pcs';
+            const minQtyVal = parseInt(minInput.value) >= 0 ? parseInt(minInput.value) : 5;
+
+            if (nameVal && !ITEMS.some(i => i.name === nameVal)) {
+                ITEMS.push({ name: nameVal, category: catVal, minQty: minQtyVal, unit: unitVal });
                 saveConfig();
                 input.value = '';
+                unitInput.value = '';
+                minInput.value = '5';
                 renderSettingsItems();
                 updateDropdowns();
                 renderApp();
-                showStatus(`Added "${val}" to ${cat}.`, "green");
-            } else if (ITEMS.some(i => i.name === val)) {
-                showStatus("Item already exists in the list.", "red");
+                showToast(`Added "${nameVal}" to ${catVal}.`, "green");
+            } else if (ITEMS.some(i => i.name === nameVal)) {
+                showToast("Item already exists in the inventory.", "red");
             }
         }
 
@@ -477,98 +742,167 @@
             renderSettingsItems();
             updateDropdowns();
             renderApp();
-            showStatus(`Removed "${itemName}" from the list.`, "blue");
+            showToast(`Removed "${itemName}" from the list.`, "indigo");
         }
 
-
-        // --- App Logic ---
+        // --- Stock Transaction Handler ---
         function handleAddStock(event, type) {
             event.preventDefault();
-            const date = document.getElementById(`${type}-date`).value;
-            const item = document.getElementById(`${type}-item`).value;
-            const qty = parseInt(document.getElementById(`${type}-qty`).value);
+            const dateEl = document.getElementById(`${type}-date`);
+            const itemEl = document.getElementById(`${type}-item`);
+            const qtyEl = document.getElementById(`${type}-qty`);
+            if (!dateEl || !itemEl || !qtyEl) return;
+
+            const date = dateEl.value;
+            const item = itemEl.value;
+            const qty = parseInt(qtyEl.value);
 
             if (date && item && qty > 0) {
-                const newRecord = { id: Date.now().toString(), date, item, qty };
+                const newRecord = { id: `local_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`, date, item, qty };
                 
                 if (type === 'in') {
-                    stockIn.unshift(newRecord); // Add to beginning
-                    document.getElementById('in-qty').value = '';
+                    stockIn.unshift(newRecord);
+                    qtyEl.value = '';
                 } else {
-                    // Check if enough stock exists before allowing out
                     const currentBal = calculateBalances()[item] || 0;
-                    if(qty > currentBal) {
-                        showStatus(`Cannot issue ${qty} ${item}(s). Only ${currentBal} in stock!`, 'red');
+                    if (qty > currentBal) {
+                        showToast(`Cannot issue ${qty} ${item}(s). Only ${currentBal} in stock!`, 'red');
                         return;
                     }
                     stockOut.unshift(newRecord);
-                    document.getElementById('out-qty').value = '';
+                    qtyEl.value = '';
                 }
                 
-                document.getElementById(`${type}-item`).value = ''; // Reset dropdown
+                itemEl.value = ''; 
+                handleItemSelect(type);
+                saveStockData();
                 renderApp();
-                showStatus(`Successfully recorded Stock ${type.toUpperCase()} for ${item}`, 'green');
+                showToast(`Recorded Stock ${type.toUpperCase()} for ${item}`, 'green');
             }
         }
 
         function deleteRecord(type, id) {
-            if (type === 'in') stockIn = stockIn.filter(r => r.id !== id);
-            if (type === 'out') stockOut = stockOut.filter(r => r.id !== id);
-            renderApp();
+            if (confirm("Are you sure you want to delete this log?")) {
+                if (type === 'in') stockIn = stockIn.filter(r => r.id !== id);
+                if (type === 'out') stockOut = stockOut.filter(r => r.id !== id);
+                saveStockData();
+                renderApp();
+                showToast("Log entry deleted.", "indigo");
+            }
         }
 
+        // --- Balance Calculation Engine ---
         function calculateBalances() {
             let balances = {};
-            // Only initialize balances for items currently in our ITEMS list
             ITEMS.forEach(itemObj => balances[itemObj.name] = 0);
             
             stockIn.forEach(record => {
-                if(balances[record.item] !== undefined) balances[record.item] += record.qty;
+                if (balances[record.item] !== undefined) balances[record.item] += record.qty;
             });
             
             stockOut.forEach(record => {
-                if(balances[record.item] !== undefined) balances[record.item] -= record.qty;
+                if (balances[record.item] !== undefined) balances[record.item] -= record.qty;
             });
             
             return balances;
         }
 
-        // --- UI Rendering ---
+        function toggleDashboardLowStockFilter(showOnly) {
+            dashboardShowOnlyLowStock = showOnly;
+            renderApp();
+        }
+
+        // --- UI Rendering Engine ---
         function renderApp() {
             const balances = calculateBalances();
             const cardsContainer = document.getElementById('balance-cards');
             const warningContainer = document.getElementById('no-items-warning');
+            if (!cardsContainer || !warningContainer) return;
+
+            // 1. STATS CALCULATION
+            let lowStockCount = 0;
+            ITEMS.forEach(itemObj => {
+                const qty = balances[itemObj.name] || 0;
+                if (qty <= (itemObj.minQty || 0)) {
+                    lowStockCount++;
+                }
+            });
+
+            const statTotalItemsEl = document.getElementById('stat-total-items');
+            const statLowStockEl = document.getElementById('stat-low-stock');
+            const statTotalLogsEl = document.getElementById('stat-total-logs');
+            if (statTotalItemsEl) statTotalItemsEl.innerText = ITEMS.length;
+            if (statLowStockEl) statLowStockEl.innerText = lowStockCount;
+            if (statTotalLogsEl) statTotalLogsEl.innerText = (stockIn.length + stockOut.length);
+
+            // Dashboard Banner Toggle
+            const lowStockBanner = document.getElementById('dashboard-low-stock-banner');
+            if (lowStockBanner) {
+                if (dashboardShowOnlyLowStock) lowStockBanner.classList.remove('hidden');
+                else lowStockBanner.classList.add('hidden');
+            }
             
-            // 1. Render Balance Cards by Category
+            // 2. RENDER CURRENT BALANCES
             if (ITEMS.length > 0) {
                 warningContainer.classList.add('hidden');
                 let html = '';
 
                 CATEGORIES.forEach(cat => {
-                    const catItems = ITEMS.filter(i => i.category === cat);
-                    if(catItems.length === 0) return;
+                    let catItems = ITEMS.filter(i => i.category === cat);
+                    if (dashboardShowOnlyLowStock) {
+                        catItems = catItems.filter(itemObj => {
+                            const qty = balances[itemObj.name] || 0;
+                            return qty <= (itemObj.minQty || 0);
+                        });
+                    }
 
-                    // Add Category Header
+                    if (catItems.length === 0) return;
+
+                    // Group Header
                     html += `
-                        <div class="col-span-full mt-4 mb-2 flex items-center gap-2">
-                            <h3 class="text-md font-bold text-gray-700 uppercase tracking-wider text-sm bg-gray-100 px-3 py-1 rounded-md">${cat}</h3>
-                            <div class="h-px bg-gray-200 flex-1"></div>
+                        <div class="col-span-full mt-4 mb-1 flex items-center gap-3">
+                            <h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-lg border border-slate-200/50 dark:border-slate-700/50">${escapeHtml(cat)}</h3>
+                            <div class="h-px bg-slate-200 dark:bg-slate-800 flex-1"></div>
                         </div>
                     `;
 
-                    // Add Cards for this Category
+                    // Generate cards
                     html += catItems.map(itemObj => {
                         const item = itemObj.name;
                         const qty = balances[item] || 0;
-                        let colorClass = qty > 0 ? 'text-green-600 bg-green-50' : 'text-gray-500 bg-gray-50';
-                        if (qty < 0) colorClass = 'text-red-600 bg-red-50';
+                        const min = itemObj.minQty || 0;
+                        const unit = itemObj.unit || 'pcs';
+                        
+                        let cardBorder = 'border-slate-105 dark:border-slate-700/70';
+                        let badgeBg = 'bg-slate-100 dark:bg-slate-850';
+                        let badgeText = 'text-slate-500 dark:text-slate-400';
+                        let label = 'In Stock';
+
+                        if (qty <= 0) {
+                            cardBorder = 'border-rose-200 dark:border-rose-900/50';
+                            badgeBg = 'bg-rose-50 dark:bg-rose-950/20';
+                            badgeText = 'text-rose-600 dark:text-rose-400';
+                            label = 'Out of Stock';
+                        } else if (qty <= min) {
+                            cardBorder = 'border-amber-200 dark:border-amber-900/50';
+                            badgeBg = 'bg-amber-50 dark:bg-amber-950/20';
+                            badgeText = 'text-amber-600 dark:text-amber-400';
+                            label = `Low Stock (Min: ${min})`;
+                        } else {
+                            cardBorder = 'border-emerald-200 dark:border-emerald-900/50';
+                            badgeBg = 'bg-emerald-50 dark:bg-emerald-950/20';
+                            badgeText = 'text-emerald-600 dark:text-emerald-450';
+                        }
                         
                         return `
-                        <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex flex-col justify-between hover:shadow-md transition">
-                            <span class="text-sm font-semibold text-gray-500 mb-3 truncate" title="${item}">${item}</span>
+                        <div class="bg-white dark:bg-slate-800 border ${cardBorder} rounded-2xl p-5 shadow-sm flex flex-col justify-between hover:shadow-md dark:hover:shadow-none hover:-translate-y-[2px] transition duration-200">
+                            <div class="flex justify-between items-start mb-4">
+                                <span class="text-sm font-semibold text-slate-600 dark:text-slate-350 truncate flex-1 pr-2" title="${escapeHtml(item)}">${escapeHtml(item)}</span>
+                                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${badgeBg} ${badgeText}">${escapeHtml(label)}</span>
+                            </div>
                             <div class="flex items-end justify-between">
-                                <span class="text-3xl font-bold text-gray-900">${qty}</span>
-                                <div class="w-10 h-10 rounded-full flex items-center justify-center ${colorClass}">
+                                <span class="text-3xl font-extrabold text-slate-800 dark:text-white">${qty} <span class="text-sm font-semibold text-slate-400">${escapeHtml(unit)}</span></span>
+                                <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-slate-50 dark:bg-slate-750 text-slate-400">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
                                 </div>
                             </div>
@@ -577,100 +911,233 @@
                     }).join('');
                 });
                 
-                cardsContainer.innerHTML = html;
+                cardsContainer.innerHTML = html || `<div class="col-span-full text-center py-12 text-sm text-slate-400 italic">No low stock items found! All items are fully stocked.</div>`;
             } else {
                 cardsContainer.innerHTML = '';
                 warningContainer.classList.remove('hidden');
             }
 
-            // 2. Render Tables
-            const renderRow = (record, type) => `
-                <tr class="hover:bg-gray-50 transition group">
-                    <td class="px-4 py-3 whitespace-nowrap text-gray-600">${formatDate(record.date)}</td>
-                    <td class="px-4 py-3 font-medium text-gray-900">${record.item}</td>
-                    <td class="px-4 py-3 text-right font-semibold ${type === 'in' ? 'text-green-600' : 'text-red-600'}">
-                        ${type === 'in' ? '+' : '-'}${record.qty}
-                    </td>
-                    <td class="px-4 py-3 text-center">
-                        <button onclick="deleteRecord('${type}', '${record.id}')" class="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition" title="Delete">
-                            <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        </button>
-                    </td>
-                </tr>
-            `;
-
-            document.getElementById('in-table-body').innerHTML = stockIn.length ? stockIn.map(r => renderRow(r, 'in')).join('') : `<tr><td colspan="4" class="px-4 py-8 text-center text-gray-400 bg-white">No stock in records yet.</td></tr>`;
-            document.getElementById('out-table-body').innerHTML = stockOut.length ? stockOut.map(r => renderRow(r, 'out')).join('') : `<tr><td colspan="4" class="px-4 py-8 text-center text-gray-400 bg-white">No stock out records yet.</td></tr>`;
-
-            // Update Counts
-            document.getElementById('in-count').innerText = `${stockIn.length} entries`;
-            document.getElementById('out-count').innerText = `${stockOut.length} entries`;
+            // 3. RENDER TRANSACTION LOGS (FILTERED)
+            renderHistoryLogs();
         }
 
-        // Helper
-        function formatDate(dateString) {
-            if(!dateString) return '';
-            const options = { month: 'short', day: 'numeric', year: 'numeric' };
-            return new Date(dateString).toLocaleDateString(undefined, options);
+        // --- Filter and Render History Logs ---
+        function handleHistoryFilterChange() {
+            const searchInput = document.getElementById('history-search');
+            const categorySelect = document.getElementById('history-category');
+            const dateStartInput = document.getElementById('history-date-start');
+            const dateEndInput = document.getElementById('history-date-end');
+
+            historySearchQuery = searchInput ? searchInput.value.trim().toLowerCase() : '';
+            historyCategoryFilter = categorySelect ? categorySelect.value : '';
+            historyDateStart = dateStartInput ? dateStartInput.value : '';
+            historyDateEnd = dateEndInput ? dateEndInput.value : '';
+            
+            renderHistoryLogs();
         }
 
-        // --- Settings & UI States ---
-        function saveSettings() {
-            const url = document.getElementById('script-url').value.trim();
-            if(url) {
-                appScriptUrl = url;
-                localStorage.setItem('googleSheetsScriptUrl', url);
-                showStatus('Sync URL saved successfully.', 'green');
+        function setHistoryTypeFilter(type) {
+            historyTypeFilter = type;
+            
+            const btnAll = document.getElementById('btn-filter-all');
+            const btnIn = document.getElementById('btn-filter-in');
+            const btnOut = document.getElementById('btn-filter-out');
+
+            const activeClass = "pb-3 text-sm font-bold text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 transition";
+            const inactiveClass = "pb-3 text-sm font-semibold text-slate-400 dark:text-slate-500 hover:text-slate-655 dark:hover:text-slate-350 border-b-2 border-transparent transition";
+
+            if (btnAll) btnAll.className = type === 'all' ? activeClass : inactiveClass;
+            if (btnIn) btnIn.className = type === 'in' ? activeClass : inactiveClass;
+            if (btnOut) btnOut.className = type === 'out' ? activeClass : inactiveClass;
+
+            const panelIn = document.getElementById('stock-in-history-panel');
+            const panelOut = document.getElementById('stock-out-history-panel');
+            const gridContainer = document.getElementById('history-tables-container');
+
+            if (panelIn && panelOut && gridContainer) {
+                if (type === 'in') {
+                    panelIn.classList.remove('hidden');
+                    panelOut.classList.add('hidden');
+                    gridContainer.className = "grid grid-cols-1";
+                } else if (type === 'out') {
+                    panelIn.classList.add('hidden');
+                    panelOut.classList.remove('hidden');
+                    gridContainer.className = "grid grid-cols-1";
+                } else {
+                    panelIn.classList.remove('hidden');
+                    panelOut.classList.remove('hidden');
+                    gridContainer.className = "grid grid-cols-1 xl:grid-cols-2 gap-6";
+                }
             }
+
+            renderHistoryLogs();
         }
 
-        function showStatus(msg, type='blue') {
-            const banner = document.getElementById('status-banner');
-            const msgEl = document.getElementById('status-message');
-            
-            banner.className = `mb-6 p-4 rounded-lg text-sm font-medium flex items-center justify-between border shadow-sm sticky top-0 z-10`;
-            
-            if(type === 'green') banner.classList.add('bg-green-50', 'text-green-800', 'border-green-200');
-            else if(type === 'red') banner.classList.add('bg-red-50', 'text-red-800', 'border-red-200');
-            else banner.classList.add('bg-blue-50', 'text-blue-800', 'border-blue-200');
+        // Reset inputs and clean filters
+        function resetHistoryFilters() {
+            const searchInput = document.getElementById('history-search');
+            const categorySelect = document.getElementById('history-category');
+            const dateStartInput = document.getElementById('history-date-start');
+            const dateEndInput = document.getElementById('history-date-end');
 
-            msgEl.textContent = msg;
-            banner.classList.remove('hidden');
-            
-            // Auto hide after 4 seconds
-            setTimeout(() => { banner.classList.add('hidden'); }, 4000);
+            if (searchInput) searchInput.value = '';
+            if (categorySelect) categorySelect.value = '';
+            if (dateStartInput) dateStartInput.value = '';
+            if (dateEndInput) dateEndInput.value = '';
+
+            historySearchQuery = '';
+            historyCategoryFilter = '';
+            historyDateStart = '';
+            historyDateEnd = '';
+
+            setHistoryTypeFilter('all');
         }
 
-        // --- Google Sheets Sync API ---
+        function renderHistoryLogs() {
+            const renderRow = (record, type) => {
+                const itemDetails = ITEMS.find(i => i.name === record.item);
+                const unit = itemDetails ? itemDetails.unit : 'pcs';
+
+                return `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-750 transition group">
+                        <td class="px-4 py-3.5 whitespace-nowrap text-slate-550 dark:text-slate-400 font-medium">${escapeHtml(formatDate(record.date))}</td>
+                        <td class="px-4 py-3.5 font-bold text-slate-800 dark:text-white">${escapeHtml(record.item)}</td>
+                        <td class="px-4 py-3.5 text-right font-extrabold ${type === 'in' ? 'text-indigo-650 dark:text-indigo-400' : 'text-rose-500 dark:text-rose-400'}">
+                            ${type === 'in' ? '+' : '-'}${record.qty} <span class="text-[10px] text-slate-400 font-semibold uppercase">${escapeHtml(unit)}</span>
+                        </td>
+                        <td class="px-4 py-3.5 text-center">
+                            <button onclick="deleteRecord('${type}', '${record.id}')" class="text-slate-400 hover:text-rose-500 md:opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition" title="Delete Log">
+                                <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            };
+
+            const passesFilters = (record) => {
+                const searchMatch = !historySearchQuery || record.item.toLowerCase().includes(historySearchQuery);
+                const itemObj = ITEMS.find(i => i.name === record.item);
+                const catMatch = !historyCategoryFilter || (itemObj && itemObj.category === historyCategoryFilter);
+                const dateStartMatch = !historyDateStart || (record.date >= historyDateStart);
+                const dateEndMatch = !historyDateEnd || (record.date <= historyDateEnd);
+                return searchMatch && catMatch && dateStartMatch && dateEndMatch;
+            };
+
+            const filteredIn = stockIn.filter(passesFilters);
+            const filteredOut = stockOut.filter(passesFilters);
+
+            const inBody = document.getElementById('in-table-body');
+            const outBody = document.getElementById('out-table-body');
+            const inCountEl = document.getElementById('in-count');
+            const outCountEl = document.getElementById('out-count');
+
+            if (inBody) {
+                inBody.innerHTML = filteredIn.length 
+                    ? filteredIn.map(r => renderRow(r, 'in')).join('') 
+                    : `<tr><td colspan="4" class="px-4 py-12 text-center text-slate-400 dark:text-slate-500 italic bg-white dark:bg-slate-800">No matching logs found.</td></tr>`;
+            }
+            if (outBody) {
+                outBody.innerHTML = filteredOut.length 
+                    ? filteredOut.map(r => renderRow(r, 'out')).join('') 
+                    : `<tr><td colspan="4" class="px-4 py-12 text-center text-slate-400 dark:text-slate-500 italic bg-white dark:bg-slate-800">No matching logs found.</td></tr>`;
+            }
+
+            if (inCountEl) inCountEl.innerText = `${filteredIn.length} entries`;
+            if (outCountEl) outCountEl.innerText = `${filteredOut.length} entries`;
+        }
+
+        // Helper timezone-offset-safe date formatter
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const parts = dateString.split('-');
+            if (parts.length === 3) {
+                const d = new Date(parts[0], parts[1] - 1, parts[2]);
+                const options = { month: 'short', day: 'numeric', year: 'numeric' };
+                return d.toLocaleDateString(undefined, options);
+            }
+            return new Date(dateString).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        // --- Settings URL Manager ---
+        function saveSettings() {
+            const urlInput = document.getElementById('script-url');
+            if (!urlInput) return;
+            const url = urlInput.value.trim();
+            
+            appScriptUrl = url;
+            localStorage.setItem('googleSheetsScriptUrl', url);
+            showToast('Google Sheets Sync URL saved successfully.', 'indigo');
+            
+            if (url) loadFromSheets(false);
+        }
+
+        // --- Premium Toast Notification System ---
+        function showToast(msg, type = 'indigo') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = `flex items-center gap-3 p-4 rounded-xl shadow-lg border text-sm font-medium transition-all duration-300 transform translate-y-2 opacity-0 bg-white dark:bg-slate-800 ${
+                type === 'green' ? 'text-emerald-800 dark:text-emerald-450 border-emerald-100 dark:border-emerald-950/60' :
+                type === 'red' ? 'text-rose-800 dark:text-rose-455 border-rose-100 dark:border-rose-950/60' :
+                'text-indigo-800 dark:text-indigo-400 border-indigo-100 dark:border-indigo-950/60'
+            }`;
+
+            let icon = '';
+            if (type === 'green') {
+                icon = `<svg class="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+            } else if (type === 'red') {
+                icon = `<svg class="w-5 h-5 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
+            } else {
+                icon = `<svg class="w-5 h-5 text-indigo-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+            }
+
+            toast.innerHTML = `${icon}<span class="flex-1">${escapeHtml(msg)}</span>`;
+            container.appendChild(toast);
+
+            // Animate In
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 50);
+
+            // Auto Remove
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 4000);
+        }
+
+        // --- Google Sheets Cloud Sync Engine ---
         
         async function saveToSheets() {
-            if(!appScriptUrl) {
-                showStatus("Please configure your Sync URL in Settings first.", "red");
+            if (!appScriptUrl) {
+                showToast("Please configure your Sync URL in Settings first.", "red");
                 switchTab('settings');
                 return;
             }
             
             const btn = document.getElementById('btn-save');
+            if (!btn) return;
             const originalHTML = btn.innerHTML;
-            btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Syncing...`;
+            btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Syncing...`;
             btn.disabled = true;
 
             try {
-                // 1. Calculate current balances
                 const balances = calculateBalances();
                 const balanceArray = ITEMS.map(itemObj => ({ name: itemObj.name, qty: balances[itemObj.name] || 0 }));
                 const maxRows = Math.max(stockIn.length, stockOut.length, ITEMS.length);
                 
-                // 2. Prepare transaction matrix
                 const dataMatrix = [];
-                for(let i = 0; i < maxRows; i++) {
+                for (let i = 0; i < maxRows; i++) {
                     const sIn = stockIn[i] || { date: '', item: '', qty: '' };
                     const sOut = stockOut[i] || { date: '', item: '', qty: '' };
                     const bal = balanceArray[i] || { name: '', qty: '' };
                     dataMatrix.push([ sIn.date, sIn.item, sIn.qty, sOut.date, sOut.item, sOut.qty, bal.name, bal.qty ]);
                 }
 
-                // 3. Send payload containing both DATA and METADATA
+                // POST action data
                 const response = await fetch(appScriptUrl, {
                     method: 'POST',
                     body: JSON.stringify({ 
@@ -682,13 +1149,14 @@
                 });
 
                 const result = await response.json();
-                if(result.status === 'success') {
-                    showStatus('Data and Settings synced successfully!', 'green');
+                if (result.status === 'success') {
+                    showToast('Settings & Data synced to Google Sheet successfully!', 'green');
                 } else {
-                    showStatus('Error: ' + result.message, 'red');
+                    showToast('Sync Error: ' + result.message, 'red');
                 }
             } catch (error) {
-                showStatus('Network error while syncing.', 'red');
+                console.error(error);
+                showToast('Network error while syncing settings.', 'red');
             } finally {
                 btn.innerHTML = originalHTML;
                 btn.disabled = false;
@@ -696,57 +1164,19 @@
         }
 
         async function loadFromSheets(isAutoLoad = false) {
-            if(!appScriptUrl) return;
-            
-            const btn = document.getElementById('btn-load');
-            const originalHTML = btn.innerHTML;
-            if(!isAutoLoad) btn.innerHTML = `Loading...`;
-
-            try {
-                const response = await fetch(`${appScriptUrl}?action=read`);
-                const result = await response.json();
-                
-                if(result.status === 'success') {
-                    // Sync Configuration from Metadata
-                    if(result.metadata) {
-                        CATEGORIES = result.metadata.categories;
-                        ITEMS = result.metadata.items;
-                        saveConfig(); // Update local storage
-                        renderSettingsItems();
-                        updateDropdowns();
-                    }
-
-                    // Sync Transactions
-                    stockIn = [];
-                    stockOut = [];
-                    result.data.forEach((row, index) => {
-                        if(row[0] && row[1] && row[2]) stockIn.push({ id: `in_${index}`, date: row[0], item: row[1], qty: parseInt(row[2]) || 0 });
-                        if(row[3] && row[4] && row[5]) stockOut.push({ id: `out_${index}`, date: row[3], item: row[4], qty: parseInt(row[5]) || 0 });
-                    });
-                    
-                    renderApp();
-                    if(!isAutoLoad) showStatus('Data and settings loaded successfully!', 'green');
-                }
-            } catch (error) {
-                if(!isAutoLoad) showStatus('Failed to load data.', 'red');
-            } finally {
-                if(!isAutoLoad) btn.innerHTML = originalHTML;
-            }
-        }
-
-        async function loadFromSheets(isAutoLoad = false) {
-            if(!appScriptUrl) {
-                if(!isAutoLoad) {
-                    showStatus("Please configure your Sync URL in Settings first.", "red");
+            if (!appScriptUrl) {
+                if (!isAutoLoad) {
+                    showToast("Please configure your Sync URL in Settings first.", "red");
                     switchTab('settings');
                 }
                 return;
             }
             
             const btn = document.getElementById('btn-load');
+            if (!btn) return;
             const originalHTML = btn.innerHTML;
-            if(!isAutoLoad) {
-                btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Loading...`;
+            if (!isAutoLoad) {
+                btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-indigo-500 inline-block" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Loading...`;
                 btn.disabled = true;
             }
 
@@ -754,130 +1184,56 @@
                 const response = await fetch(`${appScriptUrl}?action=read`);
                 const result = await response.json();
                 
-                if(result.status === 'success') {
-                    // 1. Sync Configuration if metadata exists
-                    if(result.metadata) {
-                        CATEGORIES = result.metadata.categories;
-                        ITEMS = result.metadata.items;
+                if (result.status === 'success') {
+                    // Sync Configuration Settings
+                    if (result.metadata) {
+                        CATEGORIES = result.metadata.categories || ['General'];
+                        ITEMS = result.metadata.items || [];
                         saveConfig();
                         renderSettingsItems();
                         updateDropdowns();
                     }
 
-                    // 2. Sync Transactions
+                    // Parse spreadsheet matrix rows
                     stockIn = [];
                     stockOut = [];
                     if (result.data) {
                         result.data.forEach((row, index) => {
-                            if(row[0] && row[1] && row[2]) {
-                                stockIn.push({ id: `in_${index}`, date: row[0], item: row[1], qty: parseInt(row[2]) || 0 });
+                            if (row[0] && row[1] && row[2]) {
+                                stockIn.push({ 
+                                    id: `in_sheet_${index}`, 
+                                    date: row[0], 
+                                    item: row[1], 
+                                    qty: parseInt(row[2]) || 0 
+                                });
                             }
-                            if(row[3] && row[4] && row[5]) {
-                                stockOut.push({ id: `out_${index}`, date: row[3], item: row[4], qty: parseInt(row[5]) || 0 });
+                            if (row[3] && row[4] && row[5]) {
+                                stockOut.push({ 
+                                    id: `out_sheet_${index}`, 
+                                    date: row[3], 
+                                    item: row[4], 
+                                    qty: parseInt(row[5]) || 0 
+                                });
                             }
                         });
                     }
                     
+                    saveStockData(); // update local transactions cache
                     renderApp();
-                    if(!isAutoLoad) showStatus('Data and settings loaded successfully!', 'green');
+                    if (!isAutoLoad) showToast('Loaded configuration and data from Google Sheet!', 'green');
+                } else {
+                    if (!isAutoLoad) showToast(`Failed to load data: ${result.message}`, 'red');
                 }
             } catch (error) {
                 console.error(error);
-                if(!isAutoLoad) showStatus('Failed to load data.', 'red');
+                if (!isAutoLoad) showToast('Connection error. Failed to load sheets.', 'red');
             } finally {
-                if(!isAutoLoad) {
+                if (!isAutoLoad) {
                     btn.innerHTML = originalHTML;
                     btn.disabled = false;
                 }
             }
         }
-
-                const response = await fetch(appScriptUrl, {
-                    method: 'POST',
-                    body: JSON.stringify(payload),
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-                });
-<!-- ... existing code ... -->
-```
-
-### 2. Update `loadFromSheets()`
-Update `loadFromSheets` to extract `metadata` from the response and update the global `CATEGORIES` and `ITEMS` variables.
-
-```javascript:Inventory Tracker:index.html
-<!-- ... existing code ... -->
-            try {
-                const response = await fetch(`${appScriptUrl}?action=read`);
-                const result = await response.json();
-                
-                if(result.status === 'success' && result.data) {
-                    // Sync Configuration if metadata exists
-                    if(result.metadata) {
-                        CATEGORIES = result.metadata.categories;
-                        ITEMS = result.metadata.items;
-                        saveConfig(); // Save to local storage
-                        renderSettingsItems();
-                        updateDropdowns();
-                    }
-
-                    stockIn = [];
-                    stockOut = [];
-                    
-                    // Parse 2D sheet array back into independent lists
-                    result.data.forEach((row, index) => {
-<!-- ... existing code ... -->
-```
-
-### 3. Update your Apps Script (`Code.gs`)
-Finally, your Google Apps Script needs to be updated to accept and return this `metadata`. **Update your `Code.gs` in the Google Apps Script editor:**
-
-```javascript:Apps Script Backend:Code.gs
-// ==========================================
-// REPLACE YOUR EXISTING CODE.GS
-// ==========================================
-const SHEET_NAME = 'Sheet1';
-
-function doPost(e) {
-  try {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
-    const parsedData = JSON.parse(e.postData.contents);
-    
-    if (parsedData.action === 'write') {
-      // 1. Write Metadata to Row 1
-      if (parsedData.metadata) {
-        sheet.getRange(1, 1).setValue(JSON.stringify(parsedData.metadata));
-      }
-      
-      // 2. Write Data from Row 3 onwards
-      const dataMatrix = parsedData.data;
-      const lastRow = sheet.getLastRow();
-      if(lastRow >= 3) sheet.getRange(3, 1, lastRow - 2, 8).clearContent();
-      if (dataMatrix.length > 0) sheet.getRange(3, 1, dataMatrix.length, 8).setValues(dataMatrix);
-      
-      return ContentService.createTextOutput(JSON.stringify({ status: 'success' })).setMimeType(ContentService.MimeType.JSON);
-    }
-  } catch (error) {
-    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: error.toString() })).setMimeType(ContentService.MimeType.JSON);
-  }
-}
-
-function doGet(e) {
-  try {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
-    
-    // 1. Fetch Metadata from Row 1
-    const metadataStr = sheet.getRange(1, 1).getValue();
-    const metadata = metadataStr ? JSON.parse(metadataStr) : null;
-    
-    // 2. Fetch Data from Row 3 onwards
-    const lastRow = sheet.getLastRow();
-    let data = [];
-    if (lastRow >= 3) data = sheet.getRange(3, 1, lastRow - 2, 8).getDisplayValues();
-    
-    return ContentService.createTextOutput(JSON.stringify({ status: 'success', data: data, metadata: metadata })).setMimeType(ContentService.MimeType.JSON);
-  } catch (error) {
-    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: error.toString() })).setMimeType(ContentService.MimeType.JSON);
-  }
-}
     </script>
 </body>
 </html>
