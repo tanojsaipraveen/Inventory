@@ -298,9 +298,9 @@
                                 Export Excel
                             </button>
                             <!-- Delete All -->
-                            <button onclick="deleteAllRecords()" class="flex items-center gap-1.5 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-xl transition shadow-sm">
+                            <button onclick="deleteAllRecords()" class="flex items-center gap-1.5 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-xl transition shadow-sm animate-pulse-subtle">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                Delete All Logs
+                                Reset / Delete All
                             </button>
                         </div>
                     </div>
@@ -1152,20 +1152,40 @@
             showToast("Exported to Excel/CSV successfully!", "green");
         }
 
-        // --- Delete All Local Records ---
+        // --- Reset / Delete All Data & Records ---
         function deleteAllRecords() {
-            if (stockIn.length === 0 && stockOut.length === 0) {
-                showToast("No transaction records to delete.", "red");
+            const hasLogs = (stockIn.length > 0 || stockOut.length > 0);
+            const hasItems = (ITEMS.length > 0 || CATEGORIES.length > 1);
+
+            if (!hasLogs && !hasItems) {
+                showToast("No database records (items, categories, or logs) to delete.", "red");
                 return;
             }
 
-            if (confirm("WARNING: This will permanently delete ALL transaction history logs (Stock In & Stock Out) locally.\n\nAre you sure you want to proceed?")) {
-                if (confirm("Double Confirmation: Are you absolutely sure? This action cannot be undone unless you sync again from Google Sheets.")) {
+            // Prompt 1: Reset EVERYTHING
+            if (confirm("Reset Action:\n\nWould you like to reset EVERYTHING (including all items, categories, and transaction logs) to defaults?")) {
+                if (confirm("Double Confirmation: Are you absolutely sure you want to delete all items, categories, and logs? This will reset the app and cannot be undone unless you sync again from Google Sheets.")) {
+                    CATEGORIES = ['General'];
+                    ITEMS = [];
                     stockIn = [];
                     stockOut = [];
+                    saveConfig();
                     saveStockData();
+                    renderSettingsItems();
+                    updateDropdowns();
                     renderApp();
-                    showToast("All transaction logs cleared locally. Click 'Sync to Sheets' to update your Google Sheet.", "red");
+                    showToast("All items, categories, and logs cleared. Click 'Sync to Sheets' to save this reset state in your Google Sheet.", "red");
+                }
+            } else if (hasLogs) {
+                // Prompt 2: Clear logs only
+                if (confirm("Would you like to delete ONLY the transaction logs (keeping your items and categories)?")) {
+                    if (confirm("Double Confirmation: Are you absolutely sure you want to clear all transaction logs?")) {
+                        stockIn = [];
+                        stockOut = [];
+                        saveStockData();
+                        renderApp();
+                        showToast("All transaction logs cleared locally. Click 'Sync to Sheets' to update your Google Sheet.", "red");
+                    }
                 }
             }
         }
