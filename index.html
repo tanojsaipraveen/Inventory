@@ -19,6 +19,13 @@
                 extend: {
                     fontFamily: {
                         sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        slate: {
+                            650: '#2a3649',
+                            750: '#1e293b',
+                            850: '#0f172a',
+                        }
                     }
                 }
             }
@@ -111,7 +118,7 @@
                         <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z"></path></svg>
                     </button>
                     <!-- Cloud Sync Status Badge -->
-                    <div id="cloud-sync-badge" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 bg-slate-55 dark:bg-slate-850 transition shadow-sm select-none">
+                    <div id="cloud-sync-badge" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-850 transition shadow-sm select-none">
                         <span id="sync-badge-dot" class="w-1.5 h-1.5 rounded-full bg-slate-400 transition"></span>
                         <span id="sync-badge-text">Local Only</span>
                     </div>
@@ -420,7 +427,7 @@
                             <div>
                                 <h4 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">2. Add Inventory Items</h4>
                                 <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 mb-4">
-                                    <select id="new-item-category" class="sm:col-span-3 border border-slate-200 dark:border-slate-650 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-white rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-slate-750">
+                                     <select id="new-item-category" class="sm:col-span-3 border border-slate-200 dark:border-slate-650 bg-slate-50 dark:bg-slate-750 text-slate-800 dark:text-white rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
                                         <!-- Injected via JS -->
                                     </select>
                                     <input type="text" id="new-item-name" placeholder="Item Name (e.g. Corn)" class="sm:col-span-4 border border-slate-200 dark:border-slate-650 bg-slate-50 dark:bg-slate-750 text-slate-800 dark:text-white rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
@@ -458,6 +465,8 @@
         // --- Core Data Model ---
         let CATEGORIES = [];
         let ITEMS = [];
+        let disableAutoSync = false;
+        let autoSyncTimeout = null;
 
         // Escape HTML function to prevent XSS
         function escapeHtml(str) {
@@ -491,8 +500,6 @@
         }
 
         // --- Automated Background Cloud Sync Engine ---
-        let disableAutoSync = false;
-        let autoSyncTimeout = null;
 
         function updateSyncBadge(state) {
             const badge = document.getElementById('cloud-sync-badge');
