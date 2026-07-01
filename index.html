@@ -284,11 +284,25 @@
                         </div>
                     </div>
 
-                    <!-- Type Selector tabs -->
-                    <div class="flex border-b border-slate-200 dark:border-slate-700 gap-6">
-                        <button onclick="setHistoryTypeFilter('all')" id="btn-filter-all" class="pb-3 text-sm font-semibold text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 transition">All Logs</button>
-                        <button onclick="setHistoryTypeFilter('in')" id="btn-filter-in" class="pb-3 text-sm font-semibold text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 border-b-2 border-transparent transition">Stock In Logs Only</button>
-                        <button onclick="setHistoryTypeFilter('out')" id="btn-filter-out" class="pb-3 text-sm font-semibold text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 border-b-2 border-transparent transition">Stock Out Logs Only</button>
+                    <!-- Type Selector tabs & Actions -->
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-slate-700 pb-2 sm:pb-0 gap-3">
+                        <div class="flex gap-6">
+                            <button onclick="setHistoryTypeFilter('all')" id="btn-filter-all" class="pb-3 text-sm font-bold text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 transition">All Logs</button>
+                            <button onclick="setHistoryTypeFilter('in')" id="btn-filter-in" class="pb-3 text-sm font-semibold text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 border-b-2 border-transparent transition">Stock In Logs Only</button>
+                            <button onclick="setHistoryTypeFilter('out')" id="btn-filter-out" class="pb-3 text-sm font-semibold text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 border-b-2 border-transparent transition">Stock Out Logs Only</button>
+                        </div>
+                        <div class="flex gap-2 pb-2 sm:pb-3 shrink-0">
+                            <!-- Export to Excel -->
+                            <button onclick="exportToExcel()" class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl transition shadow-sm">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                Export Excel
+                            </button>
+                            <!-- Delete All -->
+                            <button onclick="deleteAllRecords()" class="flex items-center gap-1.5 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-xl transition shadow-sm">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                Delete All Logs
+                            </button>
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-1 xl:grid-cols-2 gap-6" id="history-tables-container">
@@ -1069,6 +1083,91 @@
             showToast('Google Sheets Sync URL saved successfully.', 'indigo');
             
             if (url) loadFromSheets(false);
+        }
+
+        // --- Export to CSV / Excel ---
+        function exportToExcel() {
+            if (stockIn.length === 0 && stockOut.length === 0) {
+                showToast("No transaction records to export.", "red");
+                return;
+            }
+
+            // Header Row
+            let csvContent = "Date,Type,Item Name,Category,Quantity,Unit\n";
+            
+            // Collect all logs
+            const allLogs = [];
+            stockIn.forEach(r => {
+                const itemObj = ITEMS.find(i => i.name === r.item);
+                allLogs.push({
+                    date: r.date,
+                    type: "Stock In",
+                    item: r.item,
+                    category: itemObj ? itemObj.category : "General",
+                    qty: r.qty,
+                    unit: itemObj ? itemObj.unit : "pcs"
+                });
+            });
+            stockOut.forEach(r => {
+                const itemObj = ITEMS.find(i => i.name === r.item);
+                allLogs.push({
+                    date: r.date,
+                    type: "Stock Out",
+                    item: r.item,
+                    category: itemObj ? itemObj.category : "General",
+                    qty: r.qty,
+                    unit: itemObj ? itemObj.unit : "pcs"
+                });
+            });
+
+            // Sort by Date descending
+            allLogs.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            // Generate CSV rows
+            allLogs.forEach(log => {
+                const row = [
+                    log.date,
+                    `"${log.type}"`,
+                    `"${log.item.replace(/"/g, '""')}"`,
+                    `"${log.category.replace(/"/g, '""')}"`,
+                    log.qty,
+                    `"${log.unit.replace(/"/g, '""')}"`
+                ].join(",");
+                csvContent += row + "\n";
+            });
+
+            // Create Blob and Trigger download
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            
+            const todayStr = new Date().toISOString().split('T')[0];
+            link.setAttribute("download", `Inventory_Report_${todayStr}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            showToast("Exported to Excel/CSV successfully!", "green");
+        }
+
+        // --- Delete All Local Records ---
+        function deleteAllRecords() {
+            if (stockIn.length === 0 && stockOut.length === 0) {
+                showToast("No transaction records to delete.", "red");
+                return;
+            }
+
+            if (confirm("WARNING: This will permanently delete ALL transaction history logs (Stock In & Stock Out) locally.\n\nAre you sure you want to proceed?")) {
+                if (confirm("Double Confirmation: Are you absolutely sure? This action cannot be undone unless you sync again from Google Sheets.")) {
+                    stockIn = [];
+                    stockOut = [];
+                    saveStockData();
+                    renderApp();
+                    showToast("All transaction logs cleared locally. Click 'Sync to Sheets' to update your Google Sheet.", "red");
+                }
+            }
         }
 
         // --- Premium Toast Notification System ---
