@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Hide scrollbar for a cleaner look in tables and sidebar */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans overflow-hidden">
+
+    <div class="flex h-screen w-full">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 bg-white border-r border-gray-200 flex flex-col hidden md:flex flex-shrink-0 z-20">
+            <!-- App Branding -->
+            <div class="h-16 flex items-center px-6 border-b border-gray-200">
+                <svg class="w-8 h-8 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                <h1 class="text-xl font-bold text-gray-900 tracking-tight">StockManager</h1>
+            </div>
+            
+            <!-- Navigation Links -->
+            <nav class="flex-1 py-4 flex flex-col gap-1 px-3 overflow-y-auto">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg bg-blue-50 text-blue-700 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                    Dashboard
+                </button>
+                <button onclick="switchTab('record')" id="nav-record" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Record Stock
+                </button>
+                <button onclick="switchTab('history')" id="nav-history" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    History
+                </button>
+                <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition mt-auto">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    Settings
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content Wrapper -->
+        <div class="flex-1 flex flex-col h-screen overflow-hidden">
+            
+            <!-- Top Header (Sync Buttons & Mobile Nav) -->
+            <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-6 lg:px-8 shadow-sm shrink-0">
+                <!-- Mobile Menu Toggle -->
+                <button onclick="toggleMobileSidebar()" class="md:hidden p-2 text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                
+                <h2 id="page-title" class="text-lg font-bold text-gray-800 hidden md:block">Dashboard</h2>
+                
+                <div class="flex items-center gap-2 md:gap-3 ml-auto">
+                    <button onclick="loadFromSheets()" id="btn-load" class="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-white border border-gray-300 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-50 transition shadow-sm">
+                        <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        <span class="hidden sm:inline">Load Sheets</span>
+                    </button>
+                    <button onclick="saveToSheets()" id="btn-save" class="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-blue-600 text-sm font-medium rounded-lg text-white hover:bg-blue-700 transition shadow-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        <span class="hidden sm:inline">Sync to Sheets</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Scrollable Page Content -->
+            <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 relative">
+                
+                <!-- Status Banner -->
+                <div id="status-banner" class="hidden mb-6 p-4 rounded-lg text-sm font-medium flex items-center justify-between shadow-sm sticky top-0 z-10">
+                    <span id="status-message"></span>
+                    <button onclick="this.parentElement.classList.add('hidden')" class="text-current opacity-70 hover:opacity-100">&times;</button>
+                </div>
+
+                <!-- ================= PAGES ================= -->
+
+                <!-- PAGE 1: Dashboard -->
+                <div id="view-dashboard" class="app-view">
+                    <div class="mb-6">
+                        <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                            Current Inventory Balance
+                        </h2>
+                        <!-- Cards -->
+                        <div id="balance-cards" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"></div>
+                        <div id="no-items-warning" class="hidden bg-yellow-50 text-yellow-800 p-4 rounded-lg border border-yellow-200 text-sm">
+                            No items are currently being tracked. Go to Settings to add items.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE 2: Record Stock -->
+                <div id="view-record" class="app-view hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl">
+                        
+                        <!-- Stock In Form -->
+                        <div class="bg-white rounded-xl shadow-sm border border-blue-100 overflow-hidden h-fit">
+                            <div class="bg-blue-50 border-b border-blue-100 p-4">
+                                <h3 class="font-bold text-blue-800 flex items-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                    Record Stock In
+                                </h3>
+                            </div>
+                            <form onsubmit="handleAddStock(event, 'in')" class="p-5 space-y-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Date</label>
+                                    <input type="date" id="in-date" required class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Item</label>
+                                    <select id="in-item" required class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                                        <!-- Injected by JS -->
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Quantity</label>
+                                    <input type="number" id="in-qty" min="1" required class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
+                                </div>
+                                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition mt-2">Add Stock In</button>
+                            </form>
+                        </div>
+
+                        <!-- Stock Out Form -->
+                        <div class="bg-white rounded-xl shadow-sm border border-red-100 overflow-hidden h-fit">
+                            <div class="bg-red-50 border-b border-red-100 p-4">
+                                <h3 class="font-bold text-red-800 flex items-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
+                                    Record Stock Out
+                                </h3>
+                            </div>
+                            <form onsubmit="handleAddStock(event, 'out')" class="p-5 space-y-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Date</label>
+                                    <input type="date" id="out-date" required class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-red-500 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Item</label>
+                                    <select id="out-item" required class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-red-500 outline-none bg-white">
+                                        <!-- Injected by JS -->
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Quantity</label>
+                                    <input type="number" id="out-qty" min="1" required class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-red-500 outline-none">
+                                </div>
+                                <button type="submit" class="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-2.5 rounded-lg transition mt-2">Record Stock Out</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE 3: History -->
+                <div id="view-history" class="app-view hidden">
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                        
+                        <!-- Stock In History -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[70vh]">
+                            <div class="bg-gray-50 border-b border-gray-200 p-4 flex justify-between items-center shrink-0">
+                                <h3 class="font-bold text-gray-700">Stock In Log</h3>
+                                <span class="text-xs font-medium bg-blue-100 text-blue-800 px-2 py-1 rounded-full" id="in-count">0 items</span>
+                            </div>
+                            <div class="overflow-y-auto flex-1 no-scrollbar">
+                                <table class="w-full text-sm text-left">
+                                    <thead class="text-xs text-gray-500 uppercase bg-white sticky top-0 border-b border-gray-100 shadow-sm z-10">
+                                        <tr>
+                                            <th class="px-4 py-3">Date</th>
+                                            <th class="px-4 py-3">Item Name</th>
+                                            <th class="px-4 py-3 text-right">Qty</th>
+                                            <th class="px-4 py-3 text-center">Act</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="in-table-body" class="divide-y divide-gray-100">
+                                        <!-- Injected via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Stock Out History -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[70vh]">
+                            <div class="bg-gray-50 border-b border-gray-200 p-4 flex justify-between items-center shrink-0">
+                                <h3 class="font-bold text-gray-700">Stock Out Log</h3>
+                                <span class="text-xs font-medium bg-red-100 text-red-800 px-2 py-1 rounded-full" id="out-count">0 items</span>
+                            </div>
+                            <div class="overflow-y-auto flex-1 no-scrollbar">
+                                <table class="w-full text-sm text-left">
+                                    <thead class="text-xs text-gray-500 uppercase bg-white sticky top-0 border-b border-gray-100 shadow-sm z-10">
+                                        <tr>
+                                            <th class="px-4 py-3">Date</th>
+                                            <th class="px-4 py-3">Item Name</th>
+                                            <th class="px-4 py-3 text-right">Qty</th>
+                                            <th class="px-4 py-3 text-center">Act</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="out-table-body" class="divide-y divide-gray-100">
+                                        <!-- Injected via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE 4: Settings -->
+                <div id="view-settings" class="app-view hidden">
+                    <div class="max-w-3xl space-y-8">
+                        
+                        <!-- Sync Setup Section -->
+                        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">Google Sheets Sync configuration</h3>
+                            <p class="text-gray-500 text-sm mb-4">Paste your Google Apps Script Web App URL below to enable cloud synchronization. This allows you to backup and load your data across devices.</p>
+                            
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <input type="text" id="script-url" placeholder="https://script.google.com/macros/s/..." class="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm">
+                                <button onclick="saveSettings()" class="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition shadow-sm whitespace-nowrap">Save URL</button>
+                            </div>
+                        </div>
+
+                        <!-- Item Management Section -->
+                        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">Manage Inventory Categories & Items</h3>
+                            <p class="text-gray-500 text-sm mb-4">Create categories (like Feed, Medicine) and add items to them. Changes are saved instantly.</p>
+                            
+                            <!-- Categories -->
+                            <div class="mb-5 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <h4 class="text-sm font-semibold text-gray-700 mb-3">1. Inventory Categories</h4>
+                                <div class="flex flex-col sm:flex-row gap-2 mb-3">
+                                    <input type="text" id="new-category-name" placeholder="E.g., Feed, Medicine..." class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                                    <button onclick="addCategory()" class="px-4 py-2 bg-blue-100 text-blue-700 hover:bg-blue-200 font-medium rounded-lg transition whitespace-nowrap text-sm">Add Category</button>
+                                </div>
+                                <div id="settings-category-list" class="flex flex-wrap gap-2">
+                                    <!-- Injected via JS -->
+                                </div>
+                            </div>
+
+                            <!-- Items -->
+                            <div>
+                                <h4 class="text-sm font-semibold text-gray-700 mb-3">2. Inventory Items</h4>
+                                <div class="flex flex-col sm:flex-row gap-2 mb-4">
+                                    <select id="new-item-category" class="w-full sm:w-1/3 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                                        <!-- Injected via JS -->
+                                    </select>
+                                    <input type="text" id="new-item-name" placeholder="Item Name..." class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                                    <button onclick="addNewItem()" class="px-4 py-2 bg-gray-800 text-white font-medium rounded-lg hover:bg-gray-700 transition whitespace-nowrap text-sm">Add Item</button>
+                                </div>
+                                <div class="border border-gray-200 rounded-lg overflow-hidden">
+                                    <ul id="settings-item-list" class="divide-y divide-gray-100 max-h-64 overflow-y-auto no-scrollbar bg-white">
+                                        <!-- Injected via JS -->
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </main>
+        </div>
+        
+        <!-- Mobile Sidebar Overlay -->
+        <div id="mobile-sidebar-overlay" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-10 hidden md:hidden"></div>
+    </div>
+
+    <script>
+        // --- Core Data Model ---
+        let CATEGORIES = ['General'];
+        let ITEMS = [];
+
+        const savedSettings = localStorage.getItem('inventorySettings');
+        if (savedSettings) {
+            const parsed = JSON.parse(savedSettings);
+            CATEGORIES = parsed.categories || ['General'];
+            ITEMS = parsed.items || [];
+        } else {
+            // Backwards compatibility migration
+            const legacyItems = localStorage.getItem('inventoryItems');
+            if (legacyItems) {
+                const parsed = JSON.parse(legacyItems);
+                ITEMS = parsed.map(item => ({ name: item, category: 'General' }));
+            } else {
+                CATEGORIES = ['Feed', 'Medicine', 'Equipment'];
+                ITEMS = [
+                    { name: 'Corn (50kg)', category: 'Feed' },
+                    { name: 'Wheat (50kg)', category: 'Feed' },
+                    { name: 'Paracetamol', category: 'Medicine' },
+                    { name: 'Bandages', category: 'Medicine' }
+                ];
+            }
+        }
+        
+        function saveConfig() {
+            localStorage.setItem('inventorySettings', JSON.stringify({ categories: CATEGORIES, items: ITEMS }));
+        }
+        
+        let stockIn = [];
+        let stockOut = [];
+        
+        let appScriptUrl = localStorage.getItem('googleSheetsScriptUrl') || '';
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set today's date in forms
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('in-date').value = today;
+            document.getElementById('out-date').value = today;
+
+            updateDropdowns();
+            renderSettingsItems();
+
+            if (appScriptUrl) {
+                document.getElementById('script-url').value = appScriptUrl;
+                // Auto load if URL exists
+                loadFromSheets(true); 
+            } else {
+                renderApp();
+            }
+        });
+
+        // --- Navigation Logic ---
+        function switchTab(tabId) {
+            // Hide all views
+            document.querySelectorAll('.app-view').forEach(view => {
+                view.classList.add('hidden');
+            });
+            // Show target view
+            document.getElementById(`view-${tabId}`).classList.remove('hidden');
+
+            // Update sidebar styles
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-50', 'text-blue-700');
+                btn.classList.add('text-gray-600', 'hover:bg-gray-100', 'hover:text-gray-900');
+            });
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            activeBtn.classList.remove('text-gray-600', 'hover:bg-gray-100', 'hover:text-gray-900');
+            activeBtn.classList.add('bg-blue-50', 'text-blue-700');
+
+            // Update Header Title
+            const titles = {
+                'dashboard': 'Dashboard',
+                'record': 'Record Stock',
+                'history': 'Transaction History',
+                'settings': 'Settings & Configuration'
+            };
+            document.getElementById('page-title').innerText = titles[tabId];
+
+            // Close mobile sidebar if open
+            const sidebar = document.querySelector('aside');
+            if (!sidebar.classList.contains('hidden') && window.innerWidth < 768) {
+                toggleMobileSidebar();
+            }
+        }
+
+        function toggleMobileSidebar() {
+            const sidebar = document.querySelector('aside');
+            const overlay = document.getElementById('mobile-sidebar-overlay');
+            
+            sidebar.classList.toggle('hidden');
+            sidebar.classList.toggle('absolute');
+            sidebar.classList.toggle('h-full');
+            
+            overlay.classList.toggle('hidden');
+        }
+
+        // --- Dynamic Items Logic ---
+        function updateDropdowns() {
+            let options = `<option value="" disabled selected>Select an item...</option>`;
+            CATEGORIES.forEach(cat => {
+                const catItems = ITEMS.filter(i => i.category === cat);
+                if(catItems.length > 0) {
+                    options += `<optgroup label="${cat}">`;
+                    catItems.forEach(item => {
+                        options += `<option value="${item.name}">${item.name}</option>`;
+                    });
+                    options += `</optgroup>`;
+                }
+            });
+            document.getElementById('in-item').innerHTML = options;
+            document.getElementById('out-item').innerHTML = options;
+        }
+
+        function renderSettingsItems() {
+            // Render Categories
+            const catList = document.getElementById('settings-category-list');
+            catList.innerHTML = CATEGORIES.map(cat => `
+                <span class="px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-sm flex items-center gap-2 font-medium">
+                    ${cat}
+                    <button onclick="removeCategory('${cat}')" class="text-blue-400 hover:text-red-500 transition" title="Remove Category">
+                        &times;
+                    </button>
+                </span>
+            `).join('');
+
+            // Render Category Dropdown for new items
+            document.getElementById('new-item-category').innerHTML = CATEGORIES.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+
+            // Render Items
+            const list = document.getElementById('settings-item-list');
+            list.innerHTML = ITEMS.map(item => `
+                <li class="flex justify-between items-center bg-white px-4 py-3 hover:bg-gray-50 transition group">
+                    <div>
+                        <span class="text-sm font-medium text-gray-700 block">${item.name}</span>
+                        <span class="text-xs text-gray-500">${item.category}</span>
+                    </div>
+                    <button onclick="removeSettingItem('${item.name}')" class="text-gray-400 hover:text-red-500 p-1.5 rounded transition" title="Remove Item">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </li>
+            `).join('');
+            
+            if (ITEMS.length === 0) {
+                list.innerHTML = `<li class="text-sm text-gray-400 italic text-center py-6 bg-white">No items in your inventory list.</li>`;
+            }
+        }
+
+        function addCategory() {
+            const input = document.getElementById('new-category-name');
+            const val = input.value.trim();
+            if(val && !CATEGORIES.includes(val)) {
+                CATEGORIES.push(val);
+                saveConfig();
+                input.value = '';
+                renderSettingsItems();
+                updateDropdowns();
+                showStatus(`Added category "${val}".`, "green");
+            } else if (CATEGORIES.includes(val)) {
+                showStatus("Category already exists.", "red");
+            }
+        }
+
+        function removeCategory(cat) {
+            if(ITEMS.some(i => i.category === cat)) {
+                showStatus(`Cannot remove "${cat}". Please remove its items first.`, "red");
+                return;
+            }
+            if(CATEGORIES.length <= 1) {
+                showStatus("You must have at least one category.", "red");
+                return;
+            }
+            CATEGORIES = CATEGORIES.filter(c => c !== cat);
+            saveConfig();
+            renderSettingsItems();
+            updateDropdowns();
+            showStatus(`Removed category "${cat}".`, "blue");
+        }
+
+        function addNewItem() {
+            const input = document.getElementById('new-item-name');
+            const cat = document.getElementById('new-item-category').value;
+            const val = input.value.trim();
+            
+            if(val && !ITEMS.some(i => i.name === val)) {
+                ITEMS.push({ name: val, category: cat });
+                saveConfig();
+                input.value = '';
+                renderSettingsItems();
+                updateDropdowns();
+                renderApp();
+                showStatus(`Added "${val}" to ${cat}.`, "green");
+            } else if (ITEMS.some(i => i.name === val)) {
+                showStatus("Item already exists in the list.", "red");
+            }
+        }
+
+        function removeSettingItem(itemName) {
+            ITEMS = ITEMS.filter(i => i.name !== itemName);
+            saveConfig();
+            renderSettingsItems();
+            updateDropdowns();
+            renderApp();
+            showStatus(`Removed "${itemName}" from the list.`, "blue");
+        }
+
+
+        // --- App Logic ---
+        function handleAddStock(event, type) {
+            event.preventDefault();
+            const date = document.getElementById(`${type}-date`).value;
+            const item = document.getElementById(`${type}-item`).value;
+            const qty = parseInt(document.getElementById(`${type}-qty`).value);
+
+            if (date && item && qty > 0) {
+                const newRecord = { id: Date.now().toString(), date, item, qty };
+                
+                if (type === 'in') {
+                    stockIn.unshift(newRecord); // Add to beginning
+                    document.getElementById('in-qty').value = '';
+                } else {
+                    // Check if enough stock exists before allowing out
+                    const currentBal = calculateBalances()[item] || 0;
+                    if(qty > currentBal) {
+                        showStatus(`Cannot issue ${qty} ${item}(s). Only ${currentBal} in stock!`, 'red');
+                        return;
+                    }
+                    stockOut.unshift(newRecord);
+                    document.getElementById('out-qty').value = '';
+                }
+                
+                document.getElementById(`${type}-item`).value = ''; // Reset dropdown
+                renderApp();
+                showStatus(`Successfully recorded Stock ${type.toUpperCase()} for ${item}`, 'green');
+            }
+        }
+
+        function deleteRecord(type, id) {
+            if (type === 'in') stockIn = stockIn.filter(r => r.id !== id);
+            if (type === 'out') stockOut = stockOut.filter(r => r.id !== id);
+            renderApp();
+        }
+
+        function calculateBalances() {
+            let balances = {};
+            // Only initialize balances for items currently in our ITEMS list
+            ITEMS.forEach(itemObj => balances[itemObj.name] = 0);
+            
+            stockIn.forEach(record => {
+                if(balances[record.item] !== undefined) balances[record.item] += record.qty;
+            });
+            
+            stockOut.forEach(record => {
+                if(balances[record.item] !== undefined) balances[record.item] -= record.qty;
+            });
+            
+            return balances;
+        }
+
+        // --- UI Rendering ---
+        function renderApp() {
+            const balances = calculateBalances();
+            const cardsContainer = document.getElementById('balance-cards');
+            const warningContainer = document.getElementById('no-items-warning');
+            
+            // 1. Render Balance Cards by Category
+            if (ITEMS.length > 0) {
+                warningContainer.classList.add('hidden');
+                let html = '';
+
+                CATEGORIES.forEach(cat => {
+                    const catItems = ITEMS.filter(i => i.category === cat);
+                    if(catItems.length === 0) return;
+
+                    // Add Category Header
+                    html += `
+                        <div class="col-span-full mt-4 mb-2 flex items-center gap-2">
+                            <h3 class="text-md font-bold text-gray-700 uppercase tracking-wider text-sm bg-gray-100 px-3 py-1 rounded-md">${cat}</h3>
+                            <div class="h-px bg-gray-200 flex-1"></div>
+                        </div>
+                    `;
+
+                    // Add Cards for this Category
+                    html += catItems.map(itemObj => {
+                        const item = itemObj.name;
+                        const qty = balances[item] || 0;
+                        let colorClass = qty > 0 ? 'text-green-600 bg-green-50' : 'text-gray-500 bg-gray-50';
+                        if (qty < 0) colorClass = 'text-red-600 bg-red-50';
+                        
+                        return `
+                        <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex flex-col justify-between hover:shadow-md transition">
+                            <span class="text-sm font-semibold text-gray-500 mb-3 truncate" title="${item}">${item}</span>
+                            <div class="flex items-end justify-between">
+                                <span class="text-3xl font-bold text-gray-900">${qty}</span>
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center ${colorClass}">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                                </div>
+                            </div>
+                        </div>
+                        `;
+                    }).join('');
+                });
+                
+                cardsContainer.innerHTML = html;
+            } else {
+                cardsContainer.innerHTML = '';
+                warningContainer.classList.remove('hidden');
+            }
+
+            // 2. Render Tables
+            const renderRow = (record, type) => `
+                <tr class="hover:bg-gray-50 transition group">
+                    <td class="px-4 py-3 whitespace-nowrap text-gray-600">${formatDate(record.date)}</td>
+                    <td class="px-4 py-3 font-medium text-gray-900">${record.item}</td>
+                    <td class="px-4 py-3 text-right font-semibold ${type === 'in' ? 'text-green-600' : 'text-red-600'}">
+                        ${type === 'in' ? '+' : '-'}${record.qty}
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <button onclick="deleteRecord('${type}', '${record.id}')" class="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition" title="Delete">
+                            <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </td>
+                </tr>
+            `;
+
+            document.getElementById('in-table-body').innerHTML = stockIn.length ? stockIn.map(r => renderRow(r, 'in')).join('') : `<tr><td colspan="4" class="px-4 py-8 text-center text-gray-400 bg-white">No stock in records yet.</td></tr>`;
+            document.getElementById('out-table-body').innerHTML = stockOut.length ? stockOut.map(r => renderRow(r, 'out')).join('') : `<tr><td colspan="4" class="px-4 py-8 text-center text-gray-400 bg-white">No stock out records yet.</td></tr>`;
+
+            // Update Counts
+            document.getElementById('in-count').innerText = `${stockIn.length} entries`;
+            document.getElementById('out-count').innerText = `${stockOut.length} entries`;
+        }
+
+        // Helper
+        function formatDate(dateString) {
+            if(!dateString) return '';
+            const options = { month: 'short', day: 'numeric', year: 'numeric' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
+        }
+
+        // --- Settings & UI States ---
+        function saveSettings() {
+            const url = document.getElementById('script-url').value.trim();
+            if(url) {
+                appScriptUrl = url;
+                localStorage.setItem('googleSheetsScriptUrl', url);
+                showStatus('Sync URL saved successfully.', 'green');
+            }
+        }
+
+        function showStatus(msg, type='blue') {
+            const banner = document.getElementById('status-banner');
+            const msgEl = document.getElementById('status-message');
+            
+            banner.className = `mb-6 p-4 rounded-lg text-sm font-medium flex items-center justify-between border shadow-sm sticky top-0 z-10`;
+            
+            if(type === 'green') banner.classList.add('bg-green-50', 'text-green-800', 'border-green-200');
+            else if(type === 'red') banner.classList.add('bg-red-50', 'text-red-800', 'border-red-200');
+            else banner.classList.add('bg-blue-50', 'text-blue-800', 'border-blue-200');
+
+            msgEl.textContent = msg;
+            banner.classList.remove('hidden');
+            
+            // Auto hide after 4 seconds
+            setTimeout(() => { banner.classList.add('hidden'); }, 4000);
+        }
+
+        // --- Google Sheets Sync API ---
+        
+        async function saveToSheets() {
+            if(!appScriptUrl) {
+                showStatus("Please configure your Sync URL in Settings first.", "red");
+                switchTab('settings');
+                return;
+            }
+            
+            const btn = document.getElementById('btn-save');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Syncing...`;
+            btn.disabled = true;
+
+            try {
+                // Convert internal state back to the Spreadsheet matrix format for compatibility
+                const balances = calculateBalances();
+                const balanceArray = ITEMS.map(itemObj => ({ name: itemObj.name, qty: balances[itemObj.name] || 0 }));
+                const maxRows = Math.max(stockIn.length, stockOut.length, ITEMS.length);
+                
+                const payload = [];
+                for(let i = 0; i < maxRows; i++) {
+                    const sIn = stockIn[i] || { date: '', item: '', qty: '' };
+                    const sOut = stockOut[i] || { date: '', item: '', qty: '' };
+                    const bal = balanceArray[i] || { name: '', qty: '' };
+                    
+                    payload.push([
+                        sIn.date, sIn.item, sIn.qty,
+                        sOut.date, sOut.item, sOut.qty,
+                        bal.name, bal.qty !== '' ? bal.qty : ''
+                    ]);
+                }
+
+                const response = await fetch(appScriptUrl, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'write', data: payload }),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                });
+
+                const result = await response.json();
+                if(result.status === 'success') {
+                    showStatus('Data successfully synced to Google Sheets!', 'green');
+                } else {
+                    showStatus('Error syncing: ' + (result.message || 'Unknown error'), 'red');
+                }
+            } catch (error) {
+                console.error(error);
+                showStatus('Network error while syncing. Check your URL.', 'red');
+            } finally {
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }
+        }
+
+        async function loadFromSheets(isAutoLoad = false) {
+            if(!appScriptUrl) {
+                if(!isAutoLoad) {
+                    showStatus("Please configure your Sync URL in Settings first.", "red");
+                    switchTab('settings');
+                }
+                return;
+            }
+            
+            const btn = document.getElementById('btn-load');
+            const originalHTML = btn.innerHTML;
+            if(!isAutoLoad) {
+                btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Loading...`;
+                btn.disabled = true;
+            }
+
+            try {
+                const response = await fetch(`${appScriptUrl}?action=read`);
+                const result = await response.json();
+                
+                if(result.status === 'success' && result.data) {
+                    stockIn = [];
+                    stockOut = [];
+                    
+                    // Parse 2D sheet array back into independent lists
+                    result.data.forEach((row, index) => {
+                        if(row[0] && row[1] && row[2]) {
+                            stockIn.push({ id: `in_${index}`, date: row[0], item: row[1], qty: parseInt(row[2]) || 0 });
+                        }
+                        if(row[3] && row[4] && row[5]) {
+                            stockOut.push({ id: `out_${index}`, date: row[3], item: row[4], qty: parseInt(row[5]) || 0 });
+                        }
+                    });
+                    
+                    renderApp();
+                    if(!isAutoLoad) showStatus('Data loaded from Google Sheets successfully!', 'green');
+                }
+            } catch (error) {
+                console.error(error);
+                if(!isAutoLoad) showStatus('Failed to load data. Ensure your URL is correct.', 'red');
+            } finally {
+                if(!isAutoLoad) {
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
